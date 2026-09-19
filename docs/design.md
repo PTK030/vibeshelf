@@ -81,6 +81,14 @@ Framer Motion takes object props, which trips `react-perf/jsx-no-new-object-as-p
 Hoist animation objects to module constants, or use `variants` with `custom`
 for per-item delays, rather than suppressing the rule.
 
+## Cursors
+
+Tailwind v4's preflight sets `button { cursor: default }`, matching the browser
+default rather than the expectation. `globals.css` restores `pointer` for
+buttons, selects, summaries, checkboxes and labels wrapping one, and uses
+`not-allowed` for disabled controls. Do not re-add `cursor-pointer` per
+component — it is handled once in base.
+
 ## Logo
 
 A geometric V monogram (`src/components/layout/logo.tsx`, mirrored in
