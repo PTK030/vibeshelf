@@ -21,7 +21,7 @@ export function Toggle({ checked, onChange, label, description, disabled = false
     <label
       className={cn(
         "flex cursor-pointer items-start justify-between gap-4 rounded-md p-4",
-        "bg-surface transition-colors duration-180 ease-smooth hover:bg-surface-hover",
+        "bg-surface transition-colors duration-350 ease-smooth hover:bg-surface-hover",
         disabled && "cursor-not-allowed opacity-60",
       )}
     >

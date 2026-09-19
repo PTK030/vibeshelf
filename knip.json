@@ -2,7 +2,6 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "entry": [
     "src/app/**/{page,layout,route,default,error,loading,not-found,template}.{ts,tsx}",
-    "proxy.ts",
     "next.config.ts",
     "vitest.config.ts"
   ],

@@ -6,21 +6,25 @@ export type ButtonVariant = "accent" | "secondary" | "ghost" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
+  /*
+   * Restraint on purpose: a 1px lift and a small brightness shift. No glow, no
+   * scale. The long, soft curve is what carries the feedback.
+   */
   accent: [
     "bg-accent text-on-accent",
-    /* Lift plus a soft pool of the accent colour underneath. */
-    "hover:bg-accent-hover hover:-translate-y-0.5 hover:shadow-accent",
-    "active:translate-y-0 active:bg-accent-press active:shadow-none",
+    "hover:-translate-y-px hover:brightness-105",
+    "active:translate-y-0 active:brightness-95",
   ].join(" "),
   secondary: [
-    "border border-border-strong text-muted",
-    "hover:border-foreground hover:bg-surface-hover hover:text-foreground",
-    "hover:-translate-y-0.5 active:translate-y-0",
+    "border border-border text-muted",
+    "hover:border-border-strong hover:text-foreground",
+    "hover:-translate-y-px active:translate-y-0",
   ].join(" "),
-  ghost: "text-muted hover:bg-surface-hover hover:text-foreground",
+  ghost: "text-muted hover:text-foreground",
   danger: [
     "bg-danger text-background",
-    "hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0",
+    "hover:-translate-y-px hover:brightness-105",
+    "active:translate-y-0 active:brightness-95",
   ].join(" "),
 };
 
@@ -57,7 +61,7 @@ export function Button({
 const BASE_CLASSES = [
   "label-caps inline-flex shrink-0 items-center justify-center gap-2 rounded-pill",
   "transition-[transform,background-color,border-color,box-shadow,color,filter]",
-  "duration-280 ease-smooth will-change-transform",
+  "duration-350 ease-smooth will-change-transform",
   "disabled:pointer-events-none disabled:opacity-50",
 ].join(" ");
 

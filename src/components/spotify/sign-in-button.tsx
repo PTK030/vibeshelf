@@ -17,9 +17,9 @@ export function SignInButton({ className }: SignInButtonProps) {
       className={cn(
         "label-caps inline-flex h-12 items-center justify-center gap-3 rounded-pill px-8",
         "bg-accent text-sm text-on-accent",
-        "transition-[transform,background-color,box-shadow] duration-280 ease-smooth",
-        "hover:-translate-y-0.5 hover:bg-accent-hover hover:shadow-accent",
-        "active:translate-y-0 active:bg-accent-press active:shadow-none",
+        "transition-[transform,filter] duration-350 ease-smooth",
+        "hover:-translate-y-px hover:brightness-105",
+        "active:translate-y-0 active:brightness-95",
         className,
       )}
     >

@@ -13,7 +13,7 @@ function TrackLine({ track }: { track: PlanPlaylist["tracks"][number] }) {
   const artists = track.artistNames.join(", ");
 
   return (
-    <li className="flex items-center justify-between gap-3 rounded-sm px-1 py-1.5 transition-colors duration-180 ease-smooth hover:bg-surface-hover">
+    <li className="flex items-center justify-between gap-3 rounded-sm px-1 py-1.5 transition-colors duration-350 ease-smooth hover:bg-surface-hover">
       <span className="min-w-0 truncate text-xs">
         <span className="text-foreground">{track.name}</span>
         <span className="text-muted"> — {artists}</span>
@@ -108,7 +108,7 @@ export function PlaylistCard({ playlist, disabled, onToggle }: PlaylistCardProps
         <button
           type="button"
           onClick={handleExpand}
-          className="self-start text-2xs text-muted transition-colors duration-180 ease-smooth hover:text-foreground"
+          className="self-start text-2xs text-muted transition-colors duration-350 ease-smooth hover:text-foreground"
         >
           {expanded ? "Zwiń" : `Pokaż pozostałe ${rest.length}`}
         </button>
