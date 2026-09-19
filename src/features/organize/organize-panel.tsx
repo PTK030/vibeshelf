@@ -112,14 +112,14 @@ export function OrganizePanel({
       <Card className="flex flex-col gap-5">
         <label className="block">
           <span className="mb-2 block text-xs font-semibold text-muted">
-            Czego potrzebujesz? (opcjonalnie)
+            What do you need? (optional)
           </span>
           <textarea
             value={prompt}
             onChange={handlePrompt}
             rows={3}
             disabled={state.running}
-            placeholder="np. playlista na trening siłowy 60–90 minut, bez ballad"
+            placeholder="e.g. a 60–90 minute lifting playlist, no ballads"
             className={cn(
               "w-full resize-none rounded-sm bg-background px-4 py-3 text-sm",
               "border border-border-strong placeholder:text-disabled",
@@ -156,28 +156,28 @@ export function OrganizePanel({
           checked={preferences.deepAnalysis}
           onChange={setDeep}
           disabled={state.running}
-          label="Głęboka analiza utworów"
-          description="BPM, energia i nastrój z ReccoBeats oraz teksty. Dokładniej, ale wolniej."
+          label="Deep track analysis"
+          description="BPM, energy and mood from ReccoBeats, plus lyrics. More accurate, but slower."
         />
         <Toggle
           checked={preferences.playlistScoring}
           onChange={setScoring}
           disabled={state.running}
-          label="Ocena dopasowania playlist"
-          description="Każda playlista dostaje wynik zgodności z Twoim gustem i uzasadnienie."
+          label="Playlist fit scoring"
+          description="Each playlist gets a score against your taste, with a reason."
         />
         <Toggle
           checked={preferences.realtimeSuggestions}
           onChange={setRealtime}
           disabled={state.running}
-          label="Sugestie na żywo"
-          description="Pokazuj podpowiedzi w trakcie analizy, nie dopiero na końcu."
+          label="Live suggestions"
+          description="Show what is learned during the run, not only at the end."
         />
       </div>
 
       <div className="flex flex-wrap gap-3">
         <Button size="lg" onClick={handleStart} disabled={state.running || model === ""}>
-          {state.running ? "Analizuję..." : "Uruchom analizę"}
+          {state.running ? "Analysing..." : "Run the analysis"}
         </Button>
         <AnimatePresence initial={false}>
           {state.running && (
@@ -189,7 +189,7 @@ export function OrganizePanel({
               transition={POP_TRANSITION}
             >
               <Button variant="secondary" size="lg" onClick={cancel}>
-                Przerwij
+                Stop
               </Button>
             </motion.div>
           )}
@@ -207,7 +207,7 @@ export function OrganizePanel({
             className="overflow-hidden"
           >
             <Card className="flex flex-col gap-4">
-              <Progress value={state.progress} label={state.label || "Pracuję..."} />
+              <Progress value={state.progress} label={state.label || "Working..."} />
               <LiveNotesSection show={preferences.realtimeSuggestions} library={state.library} />
             </Card>
           </motion.div>
@@ -289,18 +289,18 @@ function LiveNotes({
   featureCoverage,
   nameOnly,
 }: LiveNotesProps) {
-  const notes: string[] = [`Analizuję ${tracks} unikalnych utworów.`];
+  const notes: string[] = [`Analysing ${tracks} unique tracks.`];
 
   if (duplicates > 0) {
-    notes.push(`Pominąłem ${duplicates} duplikatów (remastery, wersje radiowe).`);
+    notes.push(`Skipped ${duplicates} duplicates (remasters, radio edits).`);
   }
   if (nameOnly) {
-    notes.push("Spotify nie podaje gatunków dla tej biblioteki — opieram się na wiedzy modelu.");
+    notes.push("Spotify gives no genres for this library — relying on the model’s knowledge.");
   } else if (genreCoverage > 0) {
-    notes.push(`Gatunki znam dla ${Math.round(genreCoverage * 100)}% utworów.`);
+    notes.push(`Genres known for ${Math.round(genreCoverage * 100)}% of tracks.`);
   }
   if (featureCoverage > 0) {
-    notes.push(`BPM i nastrój mam dla ${Math.round(featureCoverage * 100)}% utworów.`);
+    notes.push(`BPM and mood for ${Math.round(featureCoverage * 100)}% of tracks.`);
   }
 
   return (

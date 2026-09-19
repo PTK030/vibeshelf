@@ -22,7 +22,7 @@ export function OpenInSpotify({ url, label, className }: OpenInSpotifyProps) {
       href={url}
       target="_blank"
       rel="noreferrer noopener"
-      aria-label={`Otwórz w Spotify: ${label}`}
+      aria-label={`Open in Spotify: ${label}`}
       className={cn(
         "inline-flex items-center gap-2 rounded-pill text-2xs text-muted",
         "label-caps transition-colors duration-350 ease-smooth",
@@ -31,7 +31,7 @@ export function OpenInSpotify({ url, label, className }: OpenInSpotifyProps) {
       )}
     >
       <SpotifyMark className="size-4" />
-      <span>Otwórz</span>
+      <span>Open</span>
     </a>
   );
 }

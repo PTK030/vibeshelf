@@ -37,12 +37,12 @@ export interface CommitResult {
 export async function commitPlan(input: unknown): Promise<CommitResult> {
   const parsed = CommitSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, created: [], message: "Plan jest nieprawidłowy." };
+    return { ok: false, created: [], message: "The plan is not valid." };
   }
 
   const session = await requireSessionForApi();
   if (session === undefined) {
-    return { ok: false, created: [], message: "Sesja wygasła. Zaloguj się ponownie." };
+    return { ok: false, created: [], message: "Your session expired. Sign in again." };
   }
 
   const client = new SpotifyClient(session.accessToken);
@@ -73,7 +73,7 @@ export async function commitPlan(input: unknown): Promise<CommitResult> {
     return {
       ok: true,
       created,
-      message: `Utworzono ${created.length} playlist na Twoim koncie.`,
+      message: `Created ${created.length} playlists on your account.`,
     };
   } catch (error) {
     /* Report what did land, so the user is not left guessing. */
@@ -82,9 +82,9 @@ export async function commitPlan(input: unknown): Promise<CommitResult> {
       created,
       message:
         created.length === 0
-          ? "Nie udało się utworzyć playlist."
-          : `Utworzono ${created.length} z ${parsed.data.playlists.length} playlist, potem wystąpił błąd: ${
-              error instanceof Error ? error.message : "nieznany"
+          ? "Could not create the playlists."
+          : `Created ${created.length} of ${parsed.data.playlists.length} playlists, then hit an error: ${
+              error instanceof Error ? error.message : "unknown"
             }`,
     };
   }

@@ -10,7 +10,7 @@ describe("buildInsights", () => {
       topArtistGenres: [["techno"], ["deep house"], ["tech house"], ["ambient techno"]],
     });
 
-    expect(insights.some((i) => i.title === "Masz wyraźny rdzeń")).toBe(true);
+    expect(insights.some((i) => i.title === "You have a clear core")).toBe(true);
   });
 
   it("calls out a broad taste instead", () => {
@@ -19,7 +19,7 @@ describe("buildInsights", () => {
       topArtistGenres: [["techno"], ["boom bap"], ["bebop"], ["black metal"]],
     });
 
-    expect(insights.some((i) => i.title === "Słuchasz szeroko")).toBe(true);
+    expect(insights.some((i) => i.title === "You listen broadly")).toBe(true);
   });
 
   it("flags a large library with few playlists", () => {

@@ -11,12 +11,12 @@ interface AppHeaderProps {
 
 export function AppHeader({ session }: AppHeaderProps) {
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-base/85 backdrop-blur">
+    <header className="border-b border-border bg-base">
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-6">
         <Link
-          href={session === undefined ? "/" : "/biblioteka"}
+          href={session === undefined ? "/" : "/library"}
           className="rounded-sm transition-opacity duration-350 ease-smooth hover:opacity-75"
-          aria-label="Strona główna"
+          aria-label="Home"
         >
           <Logo />
         </Link>

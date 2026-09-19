@@ -61,7 +61,7 @@ export function useOrganizeStream() {
 
   const cancel = useCallback(() => {
     abortRef.current?.abort();
-    setState((current) => ({ ...current, running: false, label: "Przerwano." }));
+    setState((current) => ({ ...current, running: false, label: "Stopped." }));
   }, []);
 
   const start = useCallback(async (request: OrganizeRequest) => {
@@ -69,10 +69,10 @@ export function useOrganizeStream() {
     const controller = new AbortController();
     abortRef.current = controller;
 
-    setState({ ...INITIAL, running: true, label: "Startuję..." });
+    setState({ ...INITIAL, running: true, label: "Starting..." });
 
     try {
-      const response = await fetch("/api/organizuj", {
+      const response = await fetch("/api/organize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(request),
@@ -84,7 +84,7 @@ export function useOrganizeStream() {
         setState((current) => ({
           ...current,
           running: false,
-          error: detail.error ?? "Nie udało się uruchomić analizy.",
+          error: detail.error ?? "Could not start the analysis.",
         }));
         return;
       }
@@ -117,7 +117,7 @@ export function useOrganizeStream() {
       setState((current) => ({
         ...current,
         running: false,
-        error: error instanceof Error ? error.message : "Połączenie przerwane.",
+        error: error instanceof Error ? error.message : "Connection interrupted.",
       }));
     }
   }, []);
@@ -166,7 +166,7 @@ function applyEvent(
     setState((current) => ({
       ...current,
       running: false,
-      error: payload.message ?? "Analiza się nie powiodła.",
+      error: payload.message ?? "The analysis failed.",
     }));
   }
 }

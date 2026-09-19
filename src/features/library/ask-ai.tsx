@@ -11,10 +11,10 @@ interface AskAiProps {
 }
 
 const SUGGESTIONS = [
-  "Czego słucham najwięcej i co to o mnie mówi?",
-  "Które gatunki mam w bibliotece, ale prawie ich nie słucham?",
-  "Co podobnego do moich ulubionych mógłbym sprawdzić?",
-  "Czy moje playlisty się dublują?",
+  "What do I listen to most, and what does that say about me?",
+  "Which genres are in my library but barely played?",
+  "What should I try that is close to my favourites?",
+  "Do my playlists overlap?",
 ];
 
 const ANSWER = {
@@ -44,7 +44,7 @@ export function AskAi({ enabled }: AskAiProps) {
     setAnswer("");
 
     try {
-      const response = await fetch("/api/zapytaj", {
+      const response = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: text }),
@@ -53,7 +53,7 @@ export function AskAi({ enabled }: AskAiProps) {
 
       if (!response.ok || response.body === null) {
         const detail = (await response.json().catch(() => ({}))) as { error?: string };
-        setError(detail.error ?? "Nie udało się zapytać modelu.");
+        setError(detail.error ?? "Could not reach the model.");
         return;
       }
 
@@ -67,7 +67,7 @@ export function AskAi({ enabled }: AskAiProps) {
       }
       /* eslint-enable no-await-in-loop */
     } catch {
-      if (!controller.signal.aborted) setError("Połączenie przerwane.");
+      if (!controller.signal.aborted) setError("Connection interrupted.");
     } finally {
       setBusy(false);
     }
@@ -99,10 +99,10 @@ export function AskAi({ enabled }: AskAiProps) {
           disabled={!enabled || busy}
           placeholder={
             enabled
-              ? "Zapytaj o swoją muzykę — np. czego słucham za dużo?"
-              : "Podłącz model w ustawieniach, żeby pytać"
+              ? "Ask about your music — e.g. what am I overplaying?"
+              : "Connect a model in settings to ask questions"
           }
-          aria-label="Zapytaj o swoją bibliotekę"
+          aria-label="Ask about your library"
           className={cn(
             "h-14 w-full rounded-pill bg-surface pr-32 pl-6 text-sm text-foreground",
             "border border-border placeholder:text-disabled",
@@ -120,7 +120,7 @@ export function AskAi({ enabled }: AskAiProps) {
             "hover:brightness-105 disabled:pointer-events-none disabled:opacity-40",
           )}
         >
-          {busy ? "Myślę..." : "Zapytaj"}
+          {busy ? "Thinking..." : "Ask"}
         </button>
       </form>
 

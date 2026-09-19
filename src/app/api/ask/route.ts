@@ -16,15 +16,15 @@ const RequestSchema = z.object({
 export async function POST(request: Request) {
   const session = await requireSessionForApi();
   if (session === undefined) {
-    return Response.json({ error: "Brak sesji" }, { status: 401 });
+    return Response.json({ error: "No session" }, { status: 401 });
   }
   if (session.ai === undefined) {
-    return Response.json({ error: "Najpierw podłącz model w ustawieniach." }, { status: 400 });
+    return Response.json({ error: "Connect a model in settings first." }, { status: 400 });
   }
 
   const parsed = RequestSchema.safeParse(await request.json());
   if (!parsed.success) {
-    return Response.json({ error: "Zadaj pytanie." }, { status: 400 });
+    return Response.json({ error: "Ask a question." }, { status: 400 });
   }
 
   const client = new SpotifyClient(session.accessToken);
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   const result = streamText({
     model: resolveModel(session.ai.provider, session.ai.key, session.ai.model),
     system: ASK_SYSTEM,
-    prompt: `Dane o bibliotece:\n${context}\n\nPytanie: ${parsed.data.question}`,
+    prompt: `Dane o bibliotece:\n${context}\n\nPycheape: ${parsed.data.question}`,
     temperature: 0.4,
     maxOutputTokens: 700,
     abortSignal: request.signal,

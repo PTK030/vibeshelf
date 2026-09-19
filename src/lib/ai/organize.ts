@@ -306,7 +306,7 @@ export async function scorePlaylists(
         .slice(0, 8)
         .map((track) => `${track.name} — ${track.artistNames[0] ?? "?"}`)
         .join("; ");
-      return `${playlist.slug} | ${playlist.name} | ${playlist.tracks.length} utworów | ${examples}`;
+      return `${playlist.slug} | ${playlist.name} | ${playlist.tracks.length} tracks | ${examples}`;
     })
     .join("\n");
 

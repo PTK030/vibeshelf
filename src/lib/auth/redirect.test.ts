@@ -15,7 +15,7 @@ describe("redirectToPath", () => {
   });
 
   it("never emits an absolute URL", () => {
-    const location = redirectToPath("/?blad=brak-kodu").headers.get("location") ?? "";
+    const location = redirectToPath("/?error=brak-kodu").headers.get("location") ?? "";
 
     expect(location.startsWith("/")).toBe(true);
     expect(location).not.toContain("://");

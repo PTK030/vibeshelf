@@ -46,7 +46,7 @@ export function UserMenu({ displayName, imageUrl, providerName }: UserMenuProps)
     };
   }, [open]);
 
-  const label = displayName ?? "Twoje konto";
+  const label = displayName ?? "Your account";
   const initial = (displayName ?? "?").trim().charAt(0).toUpperCase();
 
   return (
@@ -56,7 +56,7 @@ export function UserMenu({ displayName, imageUrl, providerName }: UserMenuProps)
         onClick={toggle}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="Menu konta"
+        aria-label="Account menu"
         className={cn(
           "flex items-center gap-2 rounded-pill p-1 pr-3",
           "transition-colors duration-350 ease-smooth hover:bg-surface-hover",
@@ -95,19 +95,19 @@ export function UserMenu({ displayName, imageUrl, providerName }: UserMenuProps)
             <div className="border-b border-border px-4 py-3">
               <p className="truncate text-sm font-semibold text-foreground">{label}</p>
               <p className="mt-0.5 text-2xs text-muted">
-                {providerName === undefined ? "AI niepodłączone" : `AI: ${providerName}`}
+                {providerName === undefined ? "No AI connected" : `AI: ${providerName}`}
               </p>
             </div>
 
             <div className="p-1">
-              <MenuLink href="/biblioteka" onNavigate={close}>
-                Biblioteka
+              <MenuLink href="/library" onNavigate={close}>
+                Library
               </MenuLink>
-              <MenuLink href="/organizuj" onNavigate={close}>
-                Organizuj
+              <MenuLink href="/organize" onNavigate={close}>
+                Organize
               </MenuLink>
-              <MenuLink href="/ustawienia" onNavigate={close}>
-                Ustawienia
+              <MenuLink href="/settings" onNavigate={close}>
+                Settings
               </MenuLink>
             </div>
 
@@ -121,7 +121,7 @@ export function UserMenu({ displayName, imageUrl, providerName }: UserMenuProps)
                     "transition-colors duration-350 ease-smooth hover:bg-surface-hover",
                   )}
                 >
-                  Wyloguj
+                  Sign out
                 </button>
               </form>
             </div>

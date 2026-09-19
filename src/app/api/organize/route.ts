@@ -32,15 +32,15 @@ function sse(event: string, data: unknown): string {
 export async function POST(request: Request) {
   const session = await requireSessionForApi();
   if (session === undefined) {
-    return Response.json({ error: "Brak sesji" }, { status: 401 });
+    return Response.json({ error: "No session" }, { status: 401 });
   }
   if (session.ai === undefined) {
-    return Response.json({ error: "Brak podłączonego dostawcy AI" }, { status: 400 });
+    return Response.json({ error: "No AI provider connected" }, { status: 400 });
   }
 
   const parsed = RequestSchema.safeParse(await request.json());
   if (!parsed.success) {
-    return Response.json({ error: "Nieprawidłowe dane" }, { status: 400 });
+    return Response.json({ error: "Invalid request" }, { status: 400 });
   }
   const input = parsed.data;
   const ai = session.ai;
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       try {
         const client = new SpotifyClient(session.accessToken);
 
-        send("phase", { phase: "liked", label: "Czytam polubione utwory" });
+        send("phase", { phase: "liked", label: "Reading your liked songs" });
 
         const library = await loadLibrary(client, {
           maxTracks: input.maxTracks,
@@ -71,26 +71,26 @@ export async function POST(request: Request) {
           onProgress: (update) => {
             const ratio = update.total === 0 ? 0 : update.done / update.total;
             if (update.phase === "liked") {
-              emitProgress("liked", WEIGHTS.liked * ratio, "Czytam polubione utwory");
+              emitProgress("liked", WEIGHTS.liked * ratio, "Reading your liked songs");
             } else if (update.phase === "artists") {
               emitProgress(
                 "artists",
                 WEIGHTS.liked + WEIGHTS.artists * ratio,
                 update.note === "name_only"
-                  ? "Spotify nie podaje gatunków — polegam na wiedzy modelu"
-                  : "Pobieram gatunki artystów",
+                  ? "Spotify gives no genres — relying on the model’s knowledge"
+                  : "Fetching artist genres",
               );
             } else if (update.phase === "features") {
               emitProgress(
                 "features",
                 WEIGHTS.liked + WEIGHTS.artists + WEIGHTS.features * ratio,
-                "Dociągam BPM i nastrój utworów",
+                "Pulling BPM and mood",
               );
             } else {
               emitProgress(
                 "lyrics",
                 WEIGHTS.liked + WEIGHTS.artists + WEIGHTS.features + WEIGHTS.lyrics * ratio,
-                "Analizuję teksty",
+                "Analysing lyrics",
               );
             }
           },
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
           /* Optional signal; a failure here must not stop the run. */
         }
 
-        send("phase", { phase: "taxonomy", label: "Układam zestaw playlist" });
+        send("phase", { phase: "taxonomy", label: "Designing the playlist set" });
 
         const base = WEIGHTS.liked + WEIGHTS.artists + WEIGHTS.features + WEIGHTS.lyrics;
         const result = await organizeLibrary(
@@ -135,13 +135,13 @@ export async function POST(request: Request) {
             emitProgress(
               "classify",
               base + WEIGHTS.classify * ratio,
-              `Przypisuję utwory (${update.done}/${update.total})`,
+              `Assigning tracks (${update.done}/${update.total})`,
             );
           },
         );
 
         if (input.playlistScoring && result.playlists.length > 0) {
-          send("phase", { phase: "scoring", label: "Oceniam dopasowanie playlist" });
+          send("phase", { phase: "scoring", label: "Scoring the playlists" });
           try {
             const scores = await scorePlaylists(result.playlists, {
               provider: ai.provider,
@@ -184,7 +184,7 @@ export async function POST(request: Request) {
         send("done", { ok: true });
       } catch (error) {
         send("error", {
-          message: error instanceof Error ? error.message : "Analiza się nie powiodła.",
+          message: error instanceof Error ? error.message : "The analysis failed.",
         });
       } finally {
         controller.close();

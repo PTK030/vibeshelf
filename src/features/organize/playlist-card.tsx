@@ -65,15 +65,15 @@ export function PlaylistCard({ playlist, disabled, onToggle }: PlaylistCardProps
             onChange={handleToggle}
             className="size-4 accent-accent"
           />
-          Utwórz
+          Create
         </label>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Badge tone="accent">{playlist.tracks.length} utworów</Badge>
+        <Badge tone="accent">{playlist.tracks.length} tracks</Badge>
         {playlist.score !== undefined && (
           <Badge tone={playlist.score.score >= 70 ? "accent" : "warning"}>
-            dopasowanie {playlist.score.score}/100
+            fit {playlist.score.score}/100
           </Badge>
         )}
       </div>
@@ -110,7 +110,7 @@ export function PlaylistCard({ playlist, disabled, onToggle }: PlaylistCardProps
           onClick={handleExpand}
           className="self-start text-2xs text-muted transition-colors duration-350 ease-smooth hover:text-foreground"
         >
-          {expanded ? "Zwiń" : `Pokaż pozostałe ${rest.length}`}
+          {expanded ? "Collapse" : `Show the other ${rest.length}`}
         </button>
       )}
     </Card>

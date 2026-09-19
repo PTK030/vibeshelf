@@ -12,7 +12,7 @@ export async function GET(request: Request) {
    * Spotify rejects "localhost" as a redirect URI, so ours is 127.0.0.1. The
    * browser treats those as different origins: starting here on localhost
    * would write the PKCE cookie to an origin Spotify never returns to, and
-   * sign-in would fail with "wygasla-proba". Bounce before the cookie exists.
+   * sign-in would fail with "expired-attempt". Bounce before the cookie exists.
    *
    * This lives here rather than in proxy.ts because Next rewrites a cross-host
    * Location coming out of the proxy into a relative path.

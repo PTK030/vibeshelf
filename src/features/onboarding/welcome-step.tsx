@@ -9,18 +9,18 @@ const SHOWN = { opacity: 1, y: 0 };
 
 const ITEMS = [
   {
-    title: "Czyta Twoje polubione",
-    body: "Pobieramy bibliotekę i gatunki artystów prosto ze Spotify.",
+    title: "Reads your liked songs",
+    body: "We pull your library and artist genres straight from Spotify.",
     transition: { delay: 0.1, duration: 0.3 },
   },
   {
-    title: "Wzbogaca o dane z sieci",
-    body: "BPM, energia i nastrój z ReccoBeats, teksty z lyrics.ovh — wszystko za darmo.",
+    title: "Enriches from the web",
+    body: "BPM, energy and mood from ReccoBeats, lyrics from lyrics.ovh — all free.",
     transition: { delay: 0.18, duration: 0.3 },
   },
   {
-    title: "Proponuje plan",
-    body: "Playlisty tematyczne zobaczysz i poprawisz, zanim cokolwiek trafi na konto.",
+    title: "Proposes a plan",
+    body: "Playlists tematyczne zobaczysz i poprawisz, zanim cokolwiek trafi na konto.",
     transition: { delay: 0.26, duration: 0.3 },
   },
 ];
@@ -33,8 +33,8 @@ interface WelcomeStepProps {
 export function WelcomeStep({ displayName, onNext }: WelcomeStepProps) {
   return (
     <div>
-      <h1 className="text-xl font-bold">Cześć, {displayName}</h1>
-      <p className="mt-3 text-sm text-muted">Trzy kroki i zaczynamy. Zajmie to mniej niż minutę.</p>
+      <h1 className="text-xl font-bold">Hi, {displayName}</h1>
+      <p className="mt-3 text-sm text-muted">Three steps and we are off. Under a minute.</p>
 
       <ul className="mt-8 flex flex-col gap-3">
         {ITEMS.map((item) => (
@@ -53,7 +53,7 @@ export function WelcomeStep({ displayName, onNext }: WelcomeStepProps) {
 
       <div className="mt-8">
         <Button size="lg" onClick={onNext}>
-          Zaczynamy
+          Get started
         </Button>
       </div>
     </div>

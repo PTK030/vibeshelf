@@ -31,7 +31,7 @@ export async function requireSession(): Promise<Session> {
   } catch (error) {
     if (error instanceof ReconsentRequiredError) {
       await clearSession();
-      redirect("/?blad=wygasla-zgoda");
+      redirect("/?error=wygasla-zgoda");
     }
     throw error;
   }

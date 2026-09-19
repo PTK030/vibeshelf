@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { SettingsPanel } from "@/features/settings/settings-panel";
 import { requireSession } from "@/lib/auth/require-session";
 
-export const metadata: Metadata = { title: "Ustawienia" };
+export const metadata: Metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
 
 /* Spotify refresh tokens expire six months after the original consent. */
@@ -24,29 +24,29 @@ export default async function SettingsPage() {
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
         <Link
-          href="/biblioteka"
+          href="/library"
           className="text-xs text-muted transition-colors duration-350 ease-smooth hover:text-foreground"
         >
-          ← Biblioteka
+          ← Library
         </Link>
 
-        <h1 className="mt-4 mb-10 text-xl font-bold">Ustawienia</h1>
+        <h1 className="mt-4 mb-10 text-xl font-bold">Settings</h1>
 
         <SettingsPanel connected={session.ai?.provider} model={session.ai?.model} />
 
         <section className="mt-10">
-          <h2 className="mb-1 text-sm font-semibold">Konto Spotify</h2>
+          <h2 className="mb-1 text-sm font-semibold">Spotify account</h2>
           <p className="mb-4 text-xs text-muted">
-            Zalogowano jako {session.displayName ?? "użytkownik Spotify"}.
+            Signed in as {session.displayName ?? "a Spotify user"}.
           </p>
 
           <Card className="flex flex-wrap items-center justify-between gap-4">
             <p className="min-w-0 flex-1 text-xs text-muted">
-              Spotify wygasza zgodę sześć miesięcy po jej udzieleniu i nie przedłuża jej przez
-              korzystanie z aplikacji.{" "}
+              Spotify expires consent six months after it is granted, and using the app does not
+              extend it.{" "}
               {daysLeft === 0
-                ? "Twoja zgoda już wygasła — zaloguj się ponownie."
-                : `Zostało ${daysLeft} dni.`}
+                ? "Your consent has expired — sign in again."
+                : `${daysLeft} days left.`}
             </p>
 
             <form action="/api/auth/logout" method="post" className="shrink-0">
@@ -54,7 +54,7 @@ export default async function SettingsPage() {
                 type="submit"
                 className="label-caps rounded-pill border border-border-strong px-5 py-2 text-2xs text-muted transition-colors duration-350 ease-smooth hover:border-danger hover:text-danger"
               >
-                Wyloguj
+                Sign out
               </button>
             </form>
           </Card>

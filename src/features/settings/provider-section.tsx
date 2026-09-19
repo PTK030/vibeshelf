@@ -58,18 +58,21 @@ export function ProviderSection({ connected, model }: ProviderSectionProps) {
   // eslint-disable-next-line react/preserve-manual-memoization
   const runDisconnect = useCallback(async () => {
     await disconnectProvider();
-    setFeedback({ ok: true, message: "Odłączono. Analiza będzie niedostępna do podłączenia." });
+    setFeedback({
+      ok: true,
+      message: "Disconnected. Analysis is unavailable until you connect one.",
+    });
   }, []);
 
   const handleDisconnect = useCallback(() => startTransition(runDisconnect), [runDisconnect]);
 
   return (
     <section>
-      <h2 className="mb-1 text-sm font-semibold">Dostawca AI</h2>
+      <h2 className="mb-1 text-sm font-semibold">AI provider</h2>
       <p className="mb-4 text-xs text-muted">
         {connected === undefined
-          ? "Nic nie jest podłączone."
-          : `Podłączono: ${providerMeta(connected).name}.`}
+          ? "Nothing is connected."
+          : `Connected: ${providerMeta(connected).name}.`}
       </p>
 
       <form onSubmit={handleSubmit}>
@@ -91,7 +94,7 @@ export function ProviderSection({ connected, model }: ProviderSectionProps) {
 
         <label className="mt-5 block">
           <span className="mb-2 block text-xs font-semibold text-muted">
-            {isActiveProvider ? `Zmień ${meta.keyLabel.toLowerCase()}` : meta.keyLabel}
+            {isActiveProvider ? `Replace ${meta.keyLabel.toLowerCase()}` : meta.keyLabel}
           </span>
           <input
             type="password"
@@ -123,11 +126,11 @@ export function ProviderSection({ connected, model }: ProviderSectionProps) {
 
         <div className="mt-5 flex flex-wrap gap-3">
           <Button type="submit" disabled={isPending || apiKey.trim() === ""}>
-            {isPending ? "Sprawdzam..." : "Zapisz klucz"}
+            {isPending ? "Checking..." : "Save key"}
           </Button>
           {connected !== undefined && (
             <Button variant="ghost" onClick={handleDisconnect} disabled={isPending}>
-              Odłącz
+              Disconnect
             </Button>
           )}
         </div>
@@ -190,7 +193,7 @@ function ProviderOption({ id, selected, active, onSelect }: ProviderOptionProps)
     >
       <span className="flex items-center justify-between gap-2">
         <span className="text-sm font-semibold text-foreground">{meta.name}</span>
-        {active && <span className="text-2xs text-accent">aktywny</span>}
+        {active && <span className="text-2xs text-accent">active</span>}
       </span>
       <span className="mt-1 block text-xs text-muted">{meta.blurb}</span>
     </button>

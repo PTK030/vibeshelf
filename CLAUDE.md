@@ -66,4 +66,4 @@ There is no database — see `docs/architecture.md`.
 kebab-case files · no barrel files · named exports · `interface` over `type` · types from
 `z.infer` · validate only at boundaries. Full list in `docs/coding-standards.md`.
 
-UI copy is Polish. Code, comments and docs are English.
+All user-facing copy, code, comments and docs are English.

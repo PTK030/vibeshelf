@@ -58,27 +58,27 @@ export function SettingsPanel({ connected, model }: SettingsPanelProps) {
       <ProviderSection connected={connected} model={model} />
 
       <section>
-        <h2 className="mb-1 text-sm font-semibold">Jak pracuje AI</h2>
-        <p className="mb-4 text-xs text-muted">Zmiany zapisują się od razu.</p>
+        <h2 className="mb-1 text-sm font-semibold">How the AI works</h2>
+        <p className="mb-4 text-xs text-muted">Changes save immediately.</p>
 
         <div className="flex flex-col gap-3">
           <Toggle
             checked={preferences.deepAnalysis}
             onChange={setDeep}
-            label="Głęboka analiza utworów"
-            description="BPM, energia i nastrój z ReccoBeats oraz teksty z lyrics.ovh. Dokładniej, ale przebieg trwa dłużej."
+            label="Deep track analysis"
+            description="BPM, energy and mood from ReccoBeats, plus lyrics from lyrics.ovh. More accurate, but the run takes longer."
           />
           <Toggle
             checked={preferences.playlistScoring}
             onChange={setScoring}
-            label="Ocena dopasowania playlist"
-            description="Każda playlista dostaje wynik zgodności z Twoim gustem i krótkie uzasadnienie."
+            label="Playlist fit scoring"
+            description="Each playlist gets a score against your taste and a short reason."
           />
           <Toggle
             checked={preferences.realtimeSuggestions}
             onChange={setRealtime}
-            label="Sugestie na żywo"
-            description="Pokazuj, czego AI dowiaduje się w trakcie analizy, zamiast czekać na koniec."
+            label="Live suggestions"
+            description="Show what the AI learns as it goes, instead of waiting for the end."
           />
         </div>
       </section>

@@ -74,10 +74,10 @@ export function PlanPreview({ plan }: PlanPreviewProps) {
     <section className="flex flex-col gap-4">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold">Propozycja</h2>
+          <h2 className="text-lg font-bold">Proposal</h2>
           <p className="mt-1 text-xs text-muted">
-            {enabled.length} playlist · {totalTracks} utworów
-            {plan.unassigned > 0 ? ` · ${plan.unassigned} nieprzypisanych` : ""}
+            {enabled.length} playlists · {totalTracks} tracks
+            {plan.unassigned > 0 ? ` · ${plan.unassigned} unassigned` : ""}
           </p>
         </div>
         <QualityNote plan={plan} />
@@ -104,9 +104,9 @@ export function PlanPreview({ plan }: PlanPreviewProps) {
       {result === undefined ? (
         <div className="flex flex-wrap items-center gap-3">
           <Button size="lg" onClick={handleCommit} disabled={isPending || enabled.length === 0}>
-            {isPending ? "Tworzę..." : `Utwórz ${enabled.length} playlist`}
+            {isPending ? "Creating..." : `Create ${enabled.length} playlists`}
           </Button>
-          <p className="text-xs text-muted">Powstaną jako prywatne. Nic innego się nie zmieni.</p>
+          <p className="text-xs text-muted">They are created private. Nothing else changes.</p>
         </div>
       ) : (
         <CommitSummary result={result} />
@@ -121,10 +121,10 @@ function QualityNote({ plan }: { plan: Plan }) {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Badge tone={tone}>{misc}% nieprzypisanych</Badge>
-      <Badge>{plan.usage.calls} zapytań do modelu</Badge>
+      <Badge tone={tone}>{misc}% unassigned</Badge>
+      <Badge>{plan.usage.calls} model calls</Badge>
       {plan.quality.hallucinatedIndices > 0 && (
-        <Badge tone="warning">{plan.quality.hallucinatedIndices} błędnych indeksów</Badge>
+        <Badge tone="warning">{plan.quality.hallucinatedIndices} bad indices</Badge>
       )}
     </div>
   );
@@ -140,7 +140,7 @@ function CommitSummary({ result }: { result: CommitResult }) {
             <li key={created.name} className="text-xs text-muted">
               {created.url === undefined ? (
                 <span>
-                  {created.name} — {created.trackCount} utworów
+                  {created.name} — {created.trackCount} tracks
                 </span>
               ) : (
                 <a
@@ -149,7 +149,7 @@ function CommitSummary({ result }: { result: CommitResult }) {
                   rel="noreferrer noopener"
                   className="text-accent hover:underline"
                 >
-                  {created.name} — {created.trackCount} utworów · otwórz w Spotify
+                  {created.name} — {created.trackCount} tracks · open in Spotify
                 </a>
               )}
             </li>

@@ -9,7 +9,7 @@ import { requireSession } from "@/lib/auth/require-session";
 import { listStructuredOutputModels } from "@/lib/openrouter/client";
 import { SpotifyClient } from "@/lib/spotify/client";
 
-export const metadata: Metadata = { title: "Organizuj" };
+export const metadata: Metadata = { title: "Organize" };
 export const dynamic = "force-dynamic";
 
 /* Surfaced first among OpenRouter's several hundred structured-output models. */
@@ -28,7 +28,7 @@ function orderModels(models: ModelChoice[]): ModelChoice[] {
   return models.toSorted((a, b) => rank(a.id) - rank(b.id) || a.name.localeCompare(b.name));
 }
 
-export default async function OrganizePage(props: PageProps<"/organizuj">) {
+export default async function OrganizePage(props: PageProps<"/organize">) {
   const search = await props.searchParams;
   const presetPrompt = typeof search.prompt === "string" ? search.prompt : undefined;
 
@@ -76,17 +76,17 @@ export default async function OrganizePage(props: PageProps<"/organizuj">) {
       <AppHeader session={session} />
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
         <Link
-          href="/biblioteka"
+          href="/library"
           className="text-xs text-muted transition-colors duration-350 ease-smooth hover:text-foreground"
         >
-          ← Biblioteka
+          ← Library
         </Link>
 
-        <h1 className="mt-4 text-xl font-bold">Zaproponuj playlisty</h1>
+        <h1 className="mt-4 text-xl font-bold">Propose playlists</h1>
         <p className="mt-3 text-sm text-muted">
-          Przeanalizuję {Math.min(liked.total, 1500).toLocaleString("pl-PL")} z{" "}
-          {liked.total.toLocaleString("pl-PL")} polubionych utworów przez {meta.name}. Nic nie
-          zostanie zapisane, dopóki nie zatwierdzisz propozycji.
+          Analysing {Math.min(liked.total, 1500).toLocaleString("en-GB")} of{" "}
+          {liked.total.toLocaleString("en-GB")} liked songs through {meta.name}. Nothing is written
+          to Spotify until you approve the proposal.
         </p>
 
         <div className="mt-8">

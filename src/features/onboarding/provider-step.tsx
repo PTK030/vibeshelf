@@ -29,7 +29,7 @@ export function ProviderStep({ connected, onNext, onBack }: ProviderStepProps) {
   const [feedback, setFeedback] = useState<{ ok: boolean; message: string } | undefined>(
     connected === undefined
       ? undefined
-      : { ok: true, message: `${providerMeta(connected).name} jest już podłączony.` },
+      : { ok: true, message: `${providerMeta(connected).name} is already connected.` },
   );
   const [isPending, startTransition] = useTransition();
 
@@ -61,10 +61,10 @@ export function ProviderStep({ connected, onNext, onBack }: ProviderStepProps) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h1 className="text-xl font-bold">Podłącz AI</h1>
+      <h1 className="text-xl font-bold">Connect AI</h1>
       <p className="mt-3 text-sm text-muted">
-        Model wybierasz Ty i Ty płacisz za jego użycie. Klucz trzymamy zaszyfrowany w Twojej sesji —
-        nie trafia do przeglądarki ani do nikogo innego.
+        You pick the model and you pay for its use. The key is stored encrypted in your own session
+        — it never reaches the browser or anyone else.
       </p>
 
       <div className="mt-6 grid gap-2 sm:grid-cols-3">
@@ -97,7 +97,7 @@ export function ProviderStep({ connected, onNext, onBack }: ProviderStepProps) {
       </label>
 
       <p className="mt-2 text-xs text-muted">
-        Klucz wygenerujesz na{" "}
+        Generate a key at{" "}
         <a
           href={meta.keyUrl}
           target="_blank"
@@ -120,15 +120,15 @@ export function ProviderStep({ connected, onNext, onBack }: ProviderStepProps) {
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Button type="submit" size="lg" disabled={isPending}>
-          {isPending ? "Sprawdzam..." : "Podłącz i dalej"}
+          {isPending ? "Checking..." : "Connect and continue"}
         </Button>
         {connected !== undefined && (
           <Button variant="secondary" size="lg" onClick={onNext}>
-            Pomiń
+            Skip
           </Button>
         )}
         <Button variant="ghost" size="lg" onClick={onBack}>
-          Wstecz
+          Back
         </Button>
       </div>
     </form>
@@ -165,7 +165,7 @@ function ProviderTile({ id, index, selected, onSelect }: ProviderTileProps) {
       <span className="block text-sm font-semibold text-foreground">{meta.name}</span>
       <span className="mt-1 block text-xs text-muted">{meta.blurb}</span>
       {meta.supportsOauth && (
-        <span className="mt-2 inline-block text-2xs text-accent">obsługuje logowanie</span>
+        <span className="mt-2 inline-block text-2xs text-accent">supports sign-in</span>
       )}
     </motion.button>
   );

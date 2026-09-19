@@ -6,36 +6,36 @@ import { cn } from "@/lib/cn";
 import { SECTION_TRANSITION } from "@/lib/motion";
 
 /*
- * Presets that land on /organizuj with the prompt already filled in. Most
+ * Presets that land on /organize with the prompt already filled in. Most
  * people do not want to compose a brief — they want the obvious thing, now.
  */
 const ACTIONS = [
   {
     slug: "all",
-    title: "Uporządkuj wszystko",
-    body: "Przejrzyj całą bibliotekę i zaproponuj komplet playlist.",
+    title: "Sort everything",
+    body: "Go through the whole library and propose a full set of playlists.",
     prompt: undefined,
     accent: true,
   },
   {
     slug: "run",
-    title: "Na trening",
-    body: "Wysokie tempo, mocny puls, bez wolnych kawałków.",
-    prompt: "Playlista na trening: wysokie BPM, energiczne, bez ballad i długich intr.",
+    title: "For a workout",
+    body: "High tempo, strong pulse, nothing slow.",
+    prompt: "Workout playlist: high BPM, energetic, no ballads or long intros.",
     accent: false,
   },
   {
     slug: "focus",
-    title: "Do skupienia",
-    body: "Instrumentalne i nierozpraszające, na długą pracę.",
-    prompt: "Playlista do pracy i nauki: instrumentalne lub minimalny wokal, stały rytm.",
+    title: "For focus",
+    body: "Instrumental and undistracting, for long stretches of work.",
+    prompt: "Focus playlist: instrumental or minimal vocals, steady rhythm.",
     accent: false,
   },
   {
     slug: "evening",
-    title: "Na wieczór",
-    body: "Wolniej, cieplej, na koniec dnia.",
-    prompt: "Playlista na spokojny wieczór: wolne tempo, ciepłe brzmienie, refleksyjne.",
+    title: "For the evening",
+    body: "Slower, warmer, for the end of the day.",
+    prompt: "Quiet evening playlist: slow tempo, warm sound, reflective.",
     accent: false,
   },
 ] as const;
@@ -63,8 +63,8 @@ export function QuickActions() {
           <Link
             href={
               action.prompt === undefined
-                ? "/organizuj"
-                : `/organizuj?prompt=${encodeURIComponent(action.prompt)}`
+                ? "/organize"
+                : `/organize?prompt=${encodeURIComponent(action.prompt)}`
             }
             className={cn(
               "flex h-full flex-col rounded-md border p-5",

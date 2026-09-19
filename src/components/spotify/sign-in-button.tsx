@@ -24,7 +24,7 @@ export function SignInButton({ className }: SignInButtonProps) {
       )}
     >
       <SpotifyMark className="size-5 fill-on-accent" />
-      Zaloguj przez Spotify
+      Sign in with Spotify
     </a>
   );
 }

@@ -6,6 +6,7 @@ import { AttributionFooter } from "@/components/layout/attribution-footer";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { OpenInSpotify } from "@/components/spotify/open-in-spotify";
+import { SpotifyMark } from "@/components/spotify/spotify-mark";
 import { buildInsights, type Insight } from "@/features/library/insights";
 import type { PlayedPlaylist } from "@/features/library/recent-playlists";
 import { AskAi } from "@/features/library/ask-ai";
@@ -16,7 +17,7 @@ import { requireSession } from "@/lib/auth/require-session";
 import { SpotifyClient } from "@/lib/spotify/client";
 import { formatDuration } from "@/lib/library/track";
 
-export const metadata: Metadata = { title: "Biblioteka" };
+export const metadata: Metadata = { title: "Library" };
 export const dynamic = "force-dynamic";
 
 export default async function LibraryPage() {
@@ -57,30 +58,30 @@ export default async function LibraryPage() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold">
-              Cześć{session.displayName === null ? "" : `, ${session.displayName}`}
+              Hi{session.displayName === null ? "" : `, ${session.displayName}`}
             </h1>
             <p className="mt-2 text-sm text-muted">
               {connected === undefined
-                ? "Podłącz model AI, żeby zacząć porządkowanie."
-                : `Gotowe do pracy przez ${connected.name}.`}
+                ? "Connect an AI model to start sorting."
+                : `Ready to work through ${connected.name}.`}
             </p>
           </div>
 
           <div className="flex gap-6">
-            <Stat label="Polubione" value={liked.total} />
-            <Stat label="Playlisty" value={playlists.total} />
-            <Stat label="Top artyści" value={topArtists.items.length} />
+            <Stat label="Liked" value={liked.total} />
+            <Stat label="Playlists" value={playlists.total} />
+            <Stat label="Top artists" value={topArtists.items.length} />
           </div>
         </div>
 
         {connected === undefined && (
           <Card className="mt-8 border border-warning/40">
             <p className="text-sm text-warning">
-              Nie masz jeszcze podłączonego modelu.{" "}
-              <Link href="/ustawienia" className="underline">
-                Podłącz go w ustawieniach
+              No model is connected yet.{" "}
+              <Link href="/settings" className="underline">
+                Connect one in settings
               </Link>
-              , zajmie to chwilę.
+              . It takes a moment.
             </p>
           </Card>
         )}
@@ -90,15 +91,13 @@ export default async function LibraryPage() {
         </section>
 
         <section className="mt-10">
-          <h2 className="mb-4 text-sm font-semibold text-muted">Od czego zacząć</h2>
+          <h2 className="mb-4 text-sm font-semibold text-muted">Where to start</h2>
           <QuickActions />
         </section>
 
         {insights.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-4 text-sm font-semibold text-muted">
-              Co widzimy w Twojej bibliotece
-            </h2>
+            <h2 className="mb-4 text-sm font-semibold text-muted">What we see in your library</h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {insights.map((insight) => (
                 <InsightCard key={insight.title} insight={insight} />
@@ -110,7 +109,7 @@ export default async function LibraryPage() {
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           {topArtists.items.length > 0 && (
             <section>
-              <h2 className="mb-4 text-sm font-semibold text-muted">Twoi artyści</h2>
+              <h2 className="mb-4 text-sm font-semibold text-muted">Your artists</h2>
               <Card className="flex flex-wrap gap-2 p-4">
                 {topArtists.items.map((artist) => (
                   <ArtistChip
@@ -129,7 +128,7 @@ export default async function LibraryPage() {
 
           {recent.length > 0 && (
             <section>
-              <h2 className="mb-4 text-sm font-semibold text-muted">Ostatnio polubione</h2>
+              <h2 className="mb-4 text-sm font-semibold text-muted">Recently liked</h2>
               <Card className="flex flex-col p-2">
                 {recent.map((track) => (
                   <RecentRow key={track.id} track={track} />
@@ -141,11 +140,9 @@ export default async function LibraryPage() {
 
         {playedPlaylists.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-1 text-sm font-semibold text-muted">
-              Najczęściej słuchane playlisty
-            </h2>
+            <h2 className="mb-1 text-sm font-semibold text-muted">Most played playlists</h2>
             <p className="mb-4 text-2xs text-disabled">
-              Z ostatnich 50 odtworzeń — Spotify nie udostępnia dłuższej historii.
+              From the last 50 plays — Spotify exposes no longer history.
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
               {playedPlaylists.map((playlist) => (
@@ -157,7 +154,7 @@ export default async function LibraryPage() {
 
         {topTracks.items.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-4 text-sm font-semibold text-muted">Najczęściej słuchane</h2>
+            <h2 className="mb-4 text-sm font-semibold text-muted">Most played</h2>
             <div className="flex flex-wrap gap-2">
               {topTracks.items.map((track) => (
                 <a
@@ -225,7 +222,7 @@ function ArtistChip({ name, imageUrl, url }: ArtistChipProps) {
       href={url}
       target="_blank"
       rel="noreferrer noopener"
-      aria-label={`Otwórz ${name} w Spotify`}
+      aria-label={`Open ${name} w Spotify`}
       className="flex items-center gap-2 rounded-pill bg-elevated py-1 pr-3 pl-1 transition-colors duration-350 ease-smooth hover:bg-surface-hover"
     >
       {imageUrl === undefined ? (
@@ -251,19 +248,41 @@ const INSIGHT_BORDER: Record<Insight["tone"], string> = {
 };
 
 function PlayedPlaylistCard({ playlist }: { playlist: PlayedPlaylist }) {
+  const details = [
+    `${playlist.plays} ${playlist.plays === 1 ? "play" : "plays"}`,
+    playlist.trackCount === undefined ? undefined : `${playlist.trackCount} tracks`,
+    playlist.owner,
+  ].filter((part) => part !== undefined);
+
   return (
-    <Card className="flex items-center justify-between gap-3">
-      <span className="min-w-0">
+    <a
+      href={playlist.spotifyUrl}
+      target="_blank"
+      rel="noreferrer noopener"
+      aria-label={`Open ${playlist.name} in Spotify`}
+      className="flex items-center gap-3 rounded-md bg-surface p-3 transition-colors duration-350 ease-smooth hover:bg-surface-hover"
+    >
+      {playlist.imageUrl === undefined ? (
+        <span className="size-12 shrink-0 rounded-sm bg-elevated" aria-hidden="true" />
+      ) : (
+        <Image
+          src={playlist.imageUrl}
+          alt=""
+          width={48}
+          height={48}
+          className="size-12 shrink-0 rounded-sm object-cover"
+        />
+      )}
+
+      <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-foreground">
           {playlist.name}
         </span>
-        <span className="mt-0.5 block text-2xs text-muted">
-          {playlist.plays} {playlist.plays === 1 ? "odtworzenie" : "odtworzeń"}
-          {playlist.owner === undefined ? "" : ` · ${playlist.owner}`}
-        </span>
+        <span className="mt-0.5 block truncate text-2xs text-muted">{details.join(" · ")}</span>
       </span>
-      <OpenInSpotify url={playlist.spotifyUrl} label={playlist.name} />
-    </Card>
+
+      <SpotifyMark className="size-5 shrink-0" />
+    </a>
   );
 }
 
@@ -271,7 +290,7 @@ function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div>
       <p className="text-2xs text-muted">{label}</p>
-      <p className="mt-1 text-xl font-bold tabular-nums">{value.toLocaleString("pl-PL")}</p>
+      <p className="mt-1 text-xl font-bold tabular-nums">{value.toLocaleString("en-GB")}</p>
     </div>
   );
 }

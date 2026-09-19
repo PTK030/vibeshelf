@@ -15,7 +15,7 @@ export async function validateProviderKey(provider: ProviderId, key: string): Pr
   const trimmed = key.trim();
 
   if (!looksLikeKey(provider, trimmed)) {
-    return { ok: false, message: "Ten klucz nie wygląda na klucz tego dostawcy." };
+    return { ok: false, message: "That does not look like a key for this provider." };
   }
 
   try {
@@ -23,7 +23,7 @@ export async function validateProviderKey(provider: ProviderId, key: string): Pr
     if (provider === "openai") return await checkOpenAI(trimmed);
     return await checkAnthropic(trimmed);
   } catch {
-    return { ok: false, message: "Nie udało się połączyć z dostawcą. Spróbuj ponownie." };
+    return { ok: false, message: "Could not reach the provider. Try again." };
   }
 }
 
@@ -33,8 +33,8 @@ async function checkOpenRouter(key: string): Promise<KeyCheck> {
     cache: "no-store",
   });
 
-  if (response.status === 401) return { ok: false, message: "OpenRouter odrzucił ten klucz." };
-  if (!response.ok) return { ok: false, message: `OpenRouter zwrócił błąd ${response.status}.` };
+  if (response.status === 401) return { ok: false, message: "OpenRouter rejected this key." };
+  if (!response.ok) return { ok: false, message: `OpenRouter returned error ${response.status}.` };
 
   const body = (await response.json()) as {
     data?: { is_free_tier?: boolean; limit_remaining?: number | null };
@@ -42,10 +42,10 @@ async function checkOpenRouter(key: string): Promise<KeyCheck> {
 
   return {
     ok: true,
-    message: "Klucz działa.",
+    message: "The key works.",
     detail:
       body.data?.is_free_tier === true
-        ? "Konto na darmowym progu — wystarczy na pierwsze przebiegi."
+        ? "Account is on the free tier — enough for the first few runs."
         : undefined,
   };
 }
@@ -56,13 +56,13 @@ async function checkOpenAI(key: string): Promise<KeyCheck> {
     cache: "no-store",
   });
 
-  if (response.status === 401) return { ok: false, message: "OpenAI odrzucił ten klucz." };
+  if (response.status === 401) return { ok: false, message: "OpenAI rejected this key." };
   if (response.status === 429) {
-    return { ok: false, message: "Klucz jest poprawny, ale konto nie ma dostępnego limitu." };
+    return { ok: false, message: "The key is valid, but the account has no quota available." };
   }
-  if (!response.ok) return { ok: false, message: `OpenAI zwrócił błąd ${response.status}.` };
+  if (!response.ok) return { ok: false, message: `OpenAI returned error ${response.status}.` };
 
-  return { ok: true, message: "Klucz działa." };
+  return { ok: true, message: "The key works." };
 }
 
 async function checkAnthropic(key: string): Promise<KeyCheck> {
@@ -79,9 +79,9 @@ async function checkAnthropic(key: string): Promise<KeyCheck> {
   });
 
   if (response.status === 401 || response.status === 403) {
-    return { ok: false, message: "Anthropic odrzucił ten klucz." };
+    return { ok: false, message: "Anthropic rejected this key." };
   }
-  if (!response.ok) return { ok: false, message: `Anthropic zwrócił błąd ${response.status}.` };
+  if (!response.ok) return { ok: false, message: `Anthropic returned error ${response.status}.` };
 
-  return { ok: true, message: "Klucz działa." };
+  return { ok: true, message: "The key works." };
 }

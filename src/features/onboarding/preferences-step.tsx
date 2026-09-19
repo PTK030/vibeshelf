@@ -27,36 +27,36 @@ export function PreferencesStep({ preferences, onChange, onBack }: PreferencesSt
 
   return (
     <div>
-      <h1 className="text-xl font-bold">Jak ma pracować AI?</h1>
-      <p className="mt-3 text-sm text-muted">Każde z tych ustawień zmienisz później.</p>
+      <h1 className="text-xl font-bold">How should the AI work?</h1>
+      <p className="mt-3 text-sm text-muted">You can change any of these later.</p>
 
       <div className="mt-8 flex flex-col gap-3">
         <Toggle
           checked={preferences.realtimeSuggestions}
           onChange={setRealtime}
-          label="Sugestie na żywo"
-          description="Podpowiedzi pojawiają się na bieżąco, gdy przeglądasz bibliotekę."
+          label="Live suggestions"
+          description="Hints appear as you go while browsing your library."
         />
         <Toggle
           checked={preferences.deepAnalysis}
           onChange={setDeep}
-          label="Głęboka analiza utworów"
-          description="Dociąga BPM, energię i nastrój oraz teksty. Dokładniejsze sortowanie, ale przebieg trwa dłużej."
+          label="Deep track analysis"
+          description="Pulls BPM, energy, mood and lyrics. More accurate sorting, but a longer run."
         />
         <Toggle
           checked={preferences.playlistScoring}
           onChange={setScoring}
-          label="Ocena dopasowania playlist"
-          description="Każda playlista dostaje wynik zgodności z Twoim gustem wraz z uzasadnieniem."
+          label="Playlist fit scoring"
+          description="Each playlist gets a score against your taste, with a reason."
         />
       </div>
 
       <div className="mt-8 flex flex-wrap gap-3">
-        <ButtonLink href="/biblioteka" size="lg">
-          Przejdź do biblioteki
+        <ButtonLink href="/library" size="lg">
+          Go to the library
         </ButtonLink>
         <Button variant="ghost" size="lg" onClick={onBack}>
-          Wstecz
+          Back
         </Button>
       </div>
     </div>

@@ -16,7 +16,7 @@ export default async function StartPage() {
       <AppHeader session={session} />
       <main className="flex flex-1 items-start justify-center px-6 py-16 sm:items-center">
         <OnboardingFlow
-          displayName={session.displayName ?? "melomanie"}
+          displayName={session.displayName ?? "there"}
           connected={session.ai?.provider}
         />
       </main>

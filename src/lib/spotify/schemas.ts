@@ -76,6 +76,8 @@ export const PlaylistPageSchema = z.object({
         description: z.string().nullable().optional(),
         public: z.boolean().nullable().optional(),
         snapshot_id: z.string().optional(),
+        images: z.array(ImageSchema).nullable().optional(),
+        tracks: z.object({ total: z.number() }).nullable().optional(),
         owner: z.object({ id: z.string() }).optional(),
         external_urls: z.object({ spotify: z.string() }).optional(),
       })
@@ -129,6 +131,7 @@ export const PlaylistSchema = z.object({
   id: z.string(),
   name: z.string(),
   images: z.array(ImageSchema).nullable().optional(),
+  tracks: z.object({ total: z.number() }).nullable().optional(),
   owner: z.object({ display_name: z.string().nullable().optional() }).optional(),
   external_urls: z.object({ spotify: z.string() }).optional(),
 });

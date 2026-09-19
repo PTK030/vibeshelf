@@ -4,7 +4,7 @@ Groups your Spotify Liked Songs into themed playlists using an AI model you
 bring yourself. Sign in with Spotify, connect Claude, ChatGPT or OpenRouter,
 and review the proposed playlists before anything is written to your account.
 
-Polish UI. Not affiliated with Spotify AB.
+Not affiliated with Spotify AB.
 
 ## What it does
 

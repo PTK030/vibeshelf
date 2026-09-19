@@ -8,9 +8,9 @@
  */
 export const BRAND = {
   name: "Vibeshelf",
-  tagline: "Twoja biblioteka, poukładana",
+  tagline: "Your library, sorted",
   description:
-    "Grupuje polubione utwory w playlisty tematyczne przy pomocy wybranego przez Ciebie modelu AI.",
+    "Groups your liked songs into themed playlists using an AI model you bring yourself.",
   /* Required by Developer Policy II.1 — must be visible to users. */
-  disclaimer: "Niezwiązane z Spotify AB.",
+  disclaimer: "Not affiliated with Spotify AB.",
 } as const;

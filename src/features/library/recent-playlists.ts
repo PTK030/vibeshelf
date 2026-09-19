@@ -4,6 +4,8 @@ export interface PlayedPlaylist {
   id: string;
   name: string;
   owner: string | undefined;
+  imageUrl: string | undefined;
+  trackCount: number | undefined;
   spotifyUrl: string;
   /* How many of the last 50 plays came from this playlist. */
   plays: number;
@@ -16,7 +18,10 @@ function playlistUrl(id: string): string {
 }
 
 type History = Awaited<ReturnType<SpotifyClient["recentlyPlayed"]>>;
-type OwnedPlaylists = Map<string, { name: string; url: string }>;
+type OwnedPlaylists = Map<
+  string,
+  { name: string; url: string; imageUrl: string | undefined; trackCount: number | undefined }
+>;
 
 function countPlaylistPlays(history: History): Map<string, number> {
   const plays = new Map<string, number>();
@@ -49,6 +54,8 @@ async function loadOwnedPlaylists(client: SpotifyClient): Promise<OwnedPlaylists
       owned.set(playlist.id, {
         name: playlist.name,
         url: playlist.external_urls?.spotify ?? playlistUrl(playlist.id),
+        imageUrl: playlist.images?.[0]?.url,
+        trackCount: playlist.tracks?.total,
       });
     }
   } catch {
@@ -66,7 +73,15 @@ async function resolvePlaylist(
 ): Promise<PlayedPlaylist | undefined> {
   const known = owned.get(id);
   if (known !== undefined) {
-    return { id, name: known.name, owner: undefined, spotifyUrl: known.url, plays };
+    return {
+      id,
+      name: known.name,
+      owner: undefined,
+      imageUrl: known.imageUrl,
+      trackCount: known.trackCount,
+      spotifyUrl: known.url,
+      plays,
+    };
   }
 
   try {
@@ -75,6 +90,8 @@ async function resolvePlaylist(
       id,
       name: playlist.name,
       owner: playlist.owner?.display_name ?? undefined,
+      imageUrl: playlist.images?.[0]?.url,
+      trackCount: playlist.tracks?.total,
       spotifyUrl: playlist.external_urls?.spotify ?? playlistUrl(id),
       plays,
     };

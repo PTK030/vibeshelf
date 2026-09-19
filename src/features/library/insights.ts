@@ -13,7 +13,7 @@ export interface Insight {
 }
 
 /*
- * Derived locally from three cheap Spotify calls — no model involved.
+ * Derived locally from a few cheap Spotify calls — no model involved.
  *
  * Deliberate: the landing surface of the app should say something true about
  * the user's library immediately, for free, rather than waiting on an AI call
@@ -38,13 +38,13 @@ export function buildInsights(input: TasteInput): Insight[] {
     insights.push(
       share > 0.6
         ? {
-            title: "Masz wyraźny rdzeń",
-            body: `Większość Twoich ulubionych artystów to ${FAMILY_LABELS[dominant[0]] ?? dominant[0]}. Playlisty warto różnicować nastrojem, nie gatunkiem.`,
+            title: "You have a clear core",
+            body: `Most of your favourite artists sit in ${FAMILY_LABELS[dominant[0]] ?? dominant[0]}. Splitting by mood will work better than splitting by genre.`,
             tone: "accent",
           }
         : {
-            title: "Słuchasz szeroko",
-            body: `Twoi ulubieni artyści rozkładają się na ${breadth} różnych obszarów. Podział po nastroju wypadnie lepiej niż po gatunku.`,
+            title: "You listen broadly",
+            body: `Your favourite artists spread across ${breadth} different areas. Grouping by mood will read better than grouping by genre.`,
             tone: "accent",
           },
     );
@@ -54,16 +54,16 @@ export function buildInsights(input: TasteInput): Insight[] {
   const perPlaylist = input.playlistTotal === 0 ? Infinity : input.likedTotal / input.playlistTotal;
   if (input.likedTotal >= 200 && perPlaylist > 20) {
     insights.push({
-      title: "Polubione rosną szybciej niż playlisty",
-      body: `${input.likedTotal.toLocaleString("pl-PL")} utworów i tylko ${input.playlistTotal} playlist. Sporo z tego pewnie nigdy nie wraca.`,
+      title: "Likes are outgrowing your playlists",
+      body: `${input.likedTotal.toLocaleString("en-GB")} tracks and only ${input.playlistTotal} playlists. A lot of that probably never comes back around.`,
       tone: "warning",
     });
   }
 
   if (input.likedTotal > 1500) {
     insights.push({
-      title: "Duża biblioteka",
-      body: "Analiza obejmie 1500 najstarszych polubionych — reszta poczeka na kolejny przebieg.",
+      title: "Large library",
+      body: "The analysis covers the 1500 oldest likes — the rest waits for another run.",
       tone: "neutral",
     });
   }
@@ -73,22 +73,22 @@ export function buildInsights(input: TasteInput): Insight[] {
 
 const FAMILY_LABELS: Record<string, string> = {
   metal: "metal",
-  punk: "punk i hardcore",
+  punk: "punk and hardcore",
   rock: "rock",
   indie: "indie",
-  electronic: "elektronika",
+  electronic: "electronic",
   ambient: "ambient",
   hiphop: "hip-hop",
-  rnb: "R&B i soul",
+  rnb: "R&B and soul",
   pop: "pop",
   jazz: "jazz",
-  classical: "klasyka",
-  folk: "folk i country",
-  latin: "muzyka latynoska",
+  classical: "classical",
+  folk: "folk and country",
+  latin: "latin",
   reggae: "reggae",
   blues: "blues",
-  world: "muzyka świata",
-  soundtrack: "ścieżki dźwiękowe",
-  experimental: "eksperyment",
+  world: "world music",
+  soundtrack: "soundtracks",
+  experimental: "experimental",
   chill: "chillout",
 };

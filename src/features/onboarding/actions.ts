@@ -21,18 +21,18 @@ export async function connectProvider(
 ): Promise<ConnectResult> {
   const parsedProvider = ProviderIdSchema.safeParse(rawProvider);
   if (!parsedProvider.success) {
-    return { ok: false, message: "Nieznany dostawca." };
+    return { ok: false, message: "Unknown provider." };
   }
 
   const provider: ProviderId = parsedProvider.data;
   const trimmed = key.trim();
   if (trimmed === "") {
-    return { ok: false, message: "Wklej klucz, żeby przejść dalej." };
+    return { ok: false, message: "Paste a key to continue." };
   }
 
   const session = await readSession();
   if (session === undefined) {
-    return { ok: false, message: "Sesja wygasła. Zaloguj się ponownie przez Spotify." };
+    return { ok: false, message: "Your session expired. Sign in with Spotify again." };
   }
 
   const check = await validateProviderKey(provider, trimmed);
@@ -53,11 +53,11 @@ export async function connectProvider(
 export async function updateModel(model: string): Promise<ConnectResult> {
   const session = await readSession();
   if (session?.ai === undefined) {
-    return { ok: false, message: "Najpierw podłącz dostawcę AI." };
+    return { ok: false, message: "Connect an AI provider first." };
   }
 
   await writeSession({ ...session, ai: { ...session.ai, model } });
-  return { ok: true, message: "Model zapisany." };
+  return { ok: true, message: "Model saved." };
 }
 
 export async function disconnectProvider(): Promise<void> {

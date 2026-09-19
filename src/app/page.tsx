@@ -5,19 +5,19 @@ import { BRAND } from "@/lib/brand";
 
 /* Codes come from the OAuth callback; anything unknown falls back to generic. */
 const ERRORS: Record<string, string> = {
-  odmowa: "Nie udzielono zgody w Spotify. Bez niej nie odczytamy biblioteki.",
-  "brak-kodu": "Spotify nie odesłał kodu autoryzacji. Spróbuj jeszcze raz.",
-  "wygasla-proba": "Próba logowania wygasła. Zacznij od nowa — powinno pójść gładko.",
-  "zly-state": "Logowanie nie pochodziło z tej strony i zostało odrzucone.",
-  "brak-refresh-tokenu": "Spotify nie wydał tokenu odświeżania. Spróbuj ponownie.",
-  "wymiana-nieudana": "Nie udało się dokończyć logowania po stronie Spotify.",
-  "wygasla-zgoda": "Zgoda wygasła po sześciu miesiącach. Zaloguj się ponownie.",
+  denied: "Access was not granted in Spotify. Without it we cannot read your library.",
+  "no-code": "Spotify did not return an authorisation code. Try again.",
+  "expired-attempt": "That sign-in attempt expired. Start again — it should go through.",
+  "bad-state": "That sign-in did not originate here, so it was rejected.",
+  "no-refresh-token": "Spotify issued no refresh token. Try again.",
+  "exchange-failed": "Sign-in could not be completed on Spotify’s side.",
+  "consent-expired": "Your consent expired after six months. Sign in again.",
 };
 
 export default async function LandingPage(props: PageProps<"/">) {
   const params = await props.searchParams;
-  const code = typeof params.blad === "string" ? params.blad : undefined;
-  const error = code === undefined ? undefined : (ERRORS[code] ?? "Logowanie się nie powiodło.");
+  const code = typeof params.error === "string" ? params.error : undefined;
+  const error = code === undefined ? undefined : (ERRORS[code] ?? "Sign-in failed.");
 
   return (
     <>
@@ -44,7 +44,7 @@ export default async function LandingPage(props: PageProps<"/">) {
           <SignInButton className="mt-10" />
 
           <p className="mt-5 text-xs text-muted">
-            Nic nie zapisujemy na Twoim koncie bez Twojej zgody.
+            Nothing is written to your account without your say-so.
           </p>
         </div>
       </main>

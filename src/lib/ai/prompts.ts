@@ -31,24 +31,24 @@ export function formatTrackLine(track: EnrichedTrack, index: number): string {
   }
 
   if (track.lyrics !== undefined && track.lyrics.keywords.length > 0) {
-    parts.push(`tekst: ${track.lyrics.keywords.slice(0, 5).join(",")}`);
+    parts.push(`lyrics: ${track.lyrics.keywords.slice(0, 5).join(",")}`);
   }
 
   return parts.join("|");
 }
 
 export const TRACK_LINE_LEGEND =
-  "# i|tytul|wykonawca|rok|dlugosc|gatunki|[bpm/energia e/nastroj v/tanecznosc d]|[slowa z tekstu]";
+  "# i|title|artist|year|length|genres|[bpm/energy e/mood v/danceability d]|[lyric keywords]";
 
-export const TAXONOMY_SYSTEM = `Jesteś kuratorem muzycznym. Na podstawie próbki biblioteki użytkownika proponujesz zestaw playlist tematycznych.
+export const TAXONOMY_SYSTEM = `You are a music curator. Given a sample of a user's library, you propose a set of themed playlists.
 
-Zasady:
-- Nazwy playlist po polsku, krótkie i konkretne ("Do biegania", "Wieczorny spokój"), nigdy nazwy gatunków ani "Playlista 1".
-- Playlisty mają się wzajemnie wykluczać: utwór ma pasować wyraźnie do jednej.
-- Opieraj się na sytuacji i nastroju (bieganie, nauka, impreza, jazda, wieczór), nie na samym gatunku — te same gatunki trafiają do różnych playlist.
-- Dobierz liczbę playlist do wielkości i różnorodności biblioteki.
-- estimatedShare to zgadywany udział w bibliotece; suma powinna być bliska 1.
-- Nie proponuj kategorii "inne" ani "różne" — system dodaje ją sam.`;
+Rules:
+- Playlist names in English, short and concrete ("For running", "Late evening"), never genre names and never "Playlist 1".
+- Playlists must be mutually exclusive: a track should clearly belong to exactly one.
+- Organise by situation and mood (running, studying, party, driving, evening), not by genre — the same genre belongs in different playlists depending on feel.
+- Match the number of playlists to the size and variety of the library.
+- estimatedShare is your guess at each playlist's share of the library; the total should be close to 1.
+- Do not propose an "other" or "misc" category — the system adds one itself.`;
 
 export interface TaxonomyPromptInput {
   totalTracks: number;
@@ -70,23 +70,23 @@ export function buildTaxonomyPrompt(input: TaxonomyPromptInput): string {
   const sample = input.sample.map((track, index) => formatTrackLine(track, index)).join("\n");
 
   const sections = [
-    `Biblioteka liczy ${input.totalTracks} utworów.`,
-    `Gatunki: ${genres || "brak danych"}.`,
-    `Dekady: ${decades || "brak danych"}.`,
+    `The library holds ${input.totalTracks} tracks.`,
+    `Genres: ${genres || "no data"}.`,
+    `Decades: ${decades || "no data"}.`,
   ];
 
   if (input.existingPlaylistNames.length > 0) {
     /* How the user already names things is the strongest hint about their taste. */
     sections.push(
-      `Playlisty, które użytkownik stworzył sam: ${input.existingPlaylistNames.slice(0, 40).join(", ")}.`,
+      `Playlists the user made themselves: ${input.existingPlaylistNames.slice(0, 40).join(", ")}.`,
     );
   }
 
   if (input.userPrompt !== undefined && input.userPrompt.trim() !== "") {
-    sections.push(`Życzenie użytkownika (traktuj priorytetowo): "${input.userPrompt.trim()}"`);
+    sections.push(`User's request (treat as the priority): "${input.userPrompt.trim()}"`);
   }
 
-  sections.push(`Próbka utworów:\n${TRACK_LINE_LEGEND}\n${sample}`);
+  sections.push(`Sample of tracks:\n${TRACK_LINE_LEGEND}\n${sample}`);
 
   return sections.join("\n\n");
 }
@@ -96,39 +96,39 @@ export function buildClassifySystem(taxonomy: Taxonomy): string {
     .map(
       (item) =>
         `- ${item.slug}: ${item.name}. ${item.vibe}` +
-        (item.keepIf.length > 0 ? ` Pasuje: ${item.keepIf.join(", ")}.` : "") +
-        (item.avoidIf.length > 0 ? ` Nie pasuje: ${item.avoidIf.join(", ")}.` : ""),
+        (item.keepIf.length > 0 ? ` Fits: ${item.keepIf.join(", ")}.` : "") +
+        (item.avoidIf.length > 0 ? ` Does not fit: ${item.avoidIf.join(", ")}.` : ""),
     )
     .join("\n");
 
-  return `Przypisujesz utwory do z góry ustalonych playlist.
+  return `You assign tracks to a fixed set of playlists.
 
-Kategorie:
+Categories:
 ${categories}
-- _misc: nic z powyższych nie pasuje wyraźnie.
+- _misc: none of the above clearly fits.
 
-Zasady:
-- Każdy utwór trafia dokładnie do jednej kategorii. Używaj indeksów z pierwszej kolumny.
-- Przypisz każdy indeks z wejścia, żadnego nie pomiń.
-- Nie wymyślaj indeksów spoza zakresu.
-- Kieruj się BPM, energią i nastrojem, jeśli są podane; gdy ich brak, korzystaj z wiedzy o utworze.
-- Indeksy, co do których masz wątpliwości, wypisz dodatkowo w lowConfidence.`;
+Rules:
+- Every track goes to exactly one category. Use the index from the first column.
+- Assign every index in the input; skip none.
+- Never invent an index outside the given range.
+- Use BPM, energy and mood where given; where absent, rely on what you know about the track.
+- List any indices you are unsure about in lowConfidence as well.`;
 }
 
 export function buildClassifyPrompt(tracks: readonly EnrichedTrack[], familyHint: string): string {
   const lines = tracks.map((track, index) => formatTrackLine(track, index)).join("\n");
   const hint =
     familyHint === "unknown"
-      ? "Ta paczka nie ma danych o gatunkach — opieraj się na swojej wiedzy o utworach."
-      : `Ta paczka to głównie: ${familyHint}.`;
+      ? "This batch has no genre data — rely on what you know about the tracks."
+      : `This batch is mostly: ${familyHint}.`;
 
   return `${hint}\n\n${TRACK_LINE_LEGEND}\n${lines}`;
 }
 
-export const SCORING_SYSTEM = `Oceniasz, jak dobrze zaproponowane playlisty pasują do gustu użytkownika.
+export const SCORING_SYSTEM = `You judge how well the proposed playlists match the user's taste.
 
-Zasady:
-- score 0-100: jak trafnie playlista oddaje realny sposób słuchania tej osoby.
-- reason: jedno zdanie po polsku, konkretnie, bez ogólników.
-- strengths i risks: krótkie hasła, maksymalnie trzy każde.
-- Bądź szczery: playlista sklejona z przypadkowych utworów ma dostać niski wynik.`;
+Rules:
+- score 0-100: how faithfully the playlist reflects how this person actually listens.
+- reason: one sentence, specific, no platitudes.
+- strengths and risks: short phrases, at most three each.
+- Be honest: a playlist stitched together from unrelated tracks deserves a low score.`;
