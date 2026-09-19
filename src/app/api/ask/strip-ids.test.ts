@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { stripIds } from "@/app/api/ask/strip-ids";
+import { stripIds, stripIdsStreaming } from "@/app/api/ask/strip-ids";
 
 describe("stripIds", () => {
   /*
@@ -32,5 +32,33 @@ describe("stripIds", () => {
 
   it("keeps line breaks while collapsing runs of spaces", () => {
     expect(stripIds("First line\nSecond  line")).toBe("First line\nSecond line");
+  });
+});
+
+describe("stripIdsStreaming", () => {
+  /*
+   * Text is still arriving here, so a half-typed id must never be shown: it
+   * would disappear a moment later and read as the answer deleting itself.
+   */
+  it("hides an id that is still being typed", () => {
+    expect(stripIdsStreaming('You played "wismarer" Joje [3Mrw')).toBe(
+      'You played "wismarer" Joje',
+    );
+  });
+
+  it("hides the bracket the moment it opens", () => {
+    expect(stripIdsStreaming("Joje [")).toBe("Joje");
+    expect(stripIdsStreaming("Joje (id=")).toBe("Joje");
+  });
+
+  it("never grows shorter once the id completes", () => {
+    const whileTyping = stripIdsStreaming("Joje [3MrwEgiGPH2KtX2qJW2dM");
+    const finished = stripIdsStreaming("Joje [3MrwEgiGPH2KtX2qJW2dMW] is top.");
+
+    expect(finished.startsWith(whileTyping)).toBe(true);
+  });
+
+  it("leaves a sentence mid-word alone", () => {
+    expect(stripIdsStreaming("You listened to a lot of mus")).toBe("You listened to a lot of mus");
   });
 });

@@ -45,65 +45,77 @@ export function AskAi({ enabled }: AskAiProps) {
     setQuestion(event.target.value);
   }, []);
 
-  const ask = useCallback(async (text: string) => {
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    setBusy(true);
-    setError(undefined);
-    setAnswer("");
-    setReferences([]);
-    setAction(undefined);
-
-    try {
-      const response = await fetch("/api/ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: text }),
-        signal: controller.signal,
-      });
-
-      if (!response.ok || response.body === null) {
-        const detail = (await response.json().catch(() => ({}))) as { error?: string };
-        setError(detail.error ?? "Could not reach the model.");
-        return;
-      }
-
-      const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
-      let buffer = "";
-
-      /* eslint-disable no-await-in-loop -- reading a stream is sequential. */
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += value;
-        const lines = buffer.split("\n");
-        /* The last piece may be a partial line; keep it for the next read. */
-        buffer = lines.pop() ?? "";
-
-        for (const line of lines) {
-          if (line.trim() === "") continue;
-          applyMessage(line, { setAnswer, setReferences, setAction, setError });
-        }
-      }
-      /* eslint-enable no-await-in-loop */
-
-      /*
-       * A final message without a trailing newline would otherwise sit in the
-       * buffer unread — and that last message is the one carrying the links
-       * and the action.
-       */
-      if (buffer.trim() !== "") {
-        applyMessage(buffer, { setAnswer, setReferences, setAction, setError });
-      }
-    } catch {
-      if (!controller.signal.aborted) setError("Connection interrupted.");
-    } finally {
-      setBusy(false);
-    }
+  /*
+   * Mid-stream text may only get longer. Partial JSON parsing can briefly
+   * yield a shorter string, and rendering that reads as the answer erasing
+   * itself. The final message is applied with setAnswer and may shorten.
+   */
+  const growAnswer = useCallback((next: string) => {
+    setAnswer((current) => (next.length >= current.length ? next : current));
   }, []);
+
+  const ask = useCallback(
+    async (text: string) => {
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      setBusy(true);
+      setError(undefined);
+      setAnswer("");
+      setReferences([]);
+      setAction(undefined);
+
+      try {
+        const response = await fetch("/api/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: text }),
+          signal: controller.signal,
+        });
+
+        if (!response.ok || response.body === null) {
+          const detail = (await response.json().catch(() => ({}))) as { error?: string };
+          setError(detail.error ?? "Could not reach the model.");
+          return;
+        }
+
+        const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+        let buffer = "";
+
+        /* eslint-disable no-await-in-loop -- reading a stream is sequential. */
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += value;
+          const lines = buffer.split("\n");
+          /* The last piece may be a partial line; keep it for the next read. */
+          buffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            if (line.trim() === "") continue;
+            applyMessage(line, { growAnswer, setAnswer, setReferences, setAction, setError });
+          }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        /*
+         * A final message without a trailing newline would otherwise sit in the
+         * buffer unread — and that last message is the one carrying the links
+         * and the action.
+         */
+        if (buffer.trim() !== "") {
+          applyMessage(buffer, { growAnswer, setAnswer, setReferences, setAction, setError });
+        }
+      } catch {
+        if (!controller.signal.aborted) setError("Connection interrupted.");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [growAnswer],
+  );
 
   const handleSubmit = useCallback(
     (event: FormEvent<HTMLFormElement>) => {
@@ -213,6 +225,8 @@ export function AskAi({ enabled }: AskAiProps) {
 }
 
 interface Setters {
+  /* Partial updates go through a reducer so text can only grow. */
+  growAnswer: (value: string) => void;
   setAnswer: (value: string) => void;
   setReferences: (value: ResolvedReference[]) => void;
   setAction: (value: Action | undefined) => void;
@@ -236,7 +250,7 @@ function applyMessage(line: string, setters: Setters): void {
   };
 
   if (payload.type === "answer" && payload.answer !== undefined) {
-    setters.setAnswer(payload.answer);
+    setters.growAnswer(payload.answer);
     return;
   }
 
