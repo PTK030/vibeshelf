@@ -1,6 +1,6 @@
 import { streamObject } from "ai";
 import { z } from "zod";
-import { AskAnswerSchema, type ResolvedReference } from "@/lib/ai/ask-schema";
+import { type AskAnswer, AskAnswerSchema, type ResolvedReference } from "@/lib/ai/ask-schema";
 import { resolveModel } from "@/lib/ai/client";
 import { ASK_SYSTEM, buildLibraryContext } from "@/lib/ai/library-context";
 import { requireSessionForApi } from "@/lib/auth/api-session";
@@ -57,7 +57,10 @@ export async function POST(request: Request) {
 
       try {
         let lastAnswer = "";
+        let lastPartial: Partial<AskAnswer> = {};
+
         for await (const partial of result.partialObjectStream) {
+          lastPartial = partial as Partial<AskAnswer>;
           const answer = partial.answer ?? "";
           if (answer !== lastAnswer) {
             lastAnswer = answer;
@@ -65,21 +68,36 @@ export async function POST(request: Request) {
           }
         }
 
-        const final = await result.object;
+        /*
+         * result.object rejects if the finished value misses the schema, which
+         * would throw away a perfectly usable answer over, say, a ninth
+         * reference. Fall back to the last partial and validate the parts we
+         * care about ourselves.
+         */
+        const final = await result.object.catch(() => lastPartial);
 
         /* Drop anything the model invented; only ids we supplied can be linked. */
-        const references: ResolvedReference[] = final.references
-          .filter((reference) => context.knownIds.has(reference.id))
-          .map((reference) => ({
-            kind: reference.kind,
-            label: reference.label,
-            url: `https://open.spotify.com/${SPOTIFY_PATH[reference.kind]}/${reference.id}`,
-          }));
+        const references: ResolvedReference[] = (final.references ?? [])
+          .flatMap((reference) => {
+            if (reference === undefined) return [];
+            const { kind, id, label } = reference;
+            if (kind === undefined || id === undefined) return [];
+            if (!context.knownIds.has(id)) return [];
+
+            return [
+              {
+                kind,
+                label: label ?? id,
+                url: `https://open.spotify.com/${SPOTIFY_PATH[kind]}/${id}`,
+              },
+            ];
+          })
+          .slice(0, 8);
 
         const action =
           final.action === undefined ? undefined : validateAction(final.action, context.playlists);
 
-        send({ type: "done", answer: final.answer, references, action });
+        send({ type: "done", answer: final.answer ?? lastAnswer, references, action });
       } catch (error) {
         send({
           type: "error",
@@ -107,10 +125,12 @@ interface ClientAction {
 }
 
 function validateAction(
-  action: { kind: string; prompt: string; label: string; playlistId?: string },
+  action: Partial<{ kind: string; prompt: string; label: string; playlistId: string }>,
   playlists: Map<string, string>,
 ): ClientAction | undefined {
-  const prompt = encodeURIComponent(action.prompt);
+  if (action.kind === undefined || action.label === undefined) return undefined;
+
+  const prompt = encodeURIComponent(action.prompt ?? "");
 
   if (action.kind === "organize-playlist") {
     /* A playlist action without a real playlist is worse than no action. */

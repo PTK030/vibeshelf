@@ -76,6 +76,14 @@ export async function buildLibraryContext(client: SpotifyClient): Promise<Librar
 
   const now = new Date();
 
+  /*
+   * History contributes ids of its own. Without them the model can name an
+   * artist it saw only in the play history but cannot link to them, which is
+   * how an answer about "who you played today" ended up with a single chip.
+   */
+  const historySummary = describeHistory(history, now);
+  for (const id of historySummary.ids) knownIds.add(id);
+
   const lines = [
     `Today is ${now.toLocaleDateString("en-GB", { dateStyle: "full" })}.`,
     "Entities are listed as: Name [spotify_id]. Use those ids when referencing something.",
@@ -85,7 +93,7 @@ export async function buildLibraryContext(client: SpotifyClient): Promise<Librar
     trackLines.length > 0 ? `Most listened tracks: ${trackLines.join("; ")}.` : undefined,
     likedLines.length > 0 ? `Recently liked: ${likedLines.join("; ")}.` : undefined,
     playlistLines.length > 0 ? `Playlists: ${playlistLines.slice(0, 40).join("; ")}.` : undefined,
-    describeHistory(history, now),
+    historySummary.text,
   ];
 
   return {
@@ -102,40 +110,58 @@ type History = Awaited<ReturnType<SpotifyClient["recentlyPlayed"]>> | undefined;
  * window falls on today's date — stated plainly so the model does not present
  * a partial count as a complete one.
  */
-function describeHistory(history: History, now: Date): string | undefined {
+interface HistorySummary {
+  text: string | undefined;
+  ids: string[];
+}
+
+function describeHistory(history: History, now: Date): HistorySummary {
   if (history === undefined) {
-    return "Play history: unavailable (missing the user-read-recently-played scope — the user must sign in again to grant it).";
+    return {
+      text: "Play history: unavailable (missing the user-read-recently-played scope — the user must sign in again to grant it).",
+      ids: [],
+    };
   }
 
   const played = history.items.flatMap((item) =>
     item.track === null ? [] : [{ track: item.track, at: new Date(item.played_at) }],
   );
 
-  if (played.length === 0) return "Play history: empty.";
+  if (played.length === 0) return { text: "Play history: empty.", ids: [] };
 
   const todayPlays = played.filter((entry) => entry.at.toDateString() === now.toDateString());
 
-  const counts = new Map<string, number>();
+  /* Keyed by artist id so the label can carry it, name as a fallback. */
+  const counts = new Map<string, { name: string; id: string | null; plays: number }>();
   for (const entry of todayPlays) {
     for (const artist of entry.track.artists) {
-      counts.set(artist.name, (counts.get(artist.name) ?? 0) + 1);
+      const key = artist.id ?? artist.name;
+      const existing = counts.get(key);
+      if (existing === undefined) counts.set(key, { name: artist.name, id: artist.id, plays: 1 });
+      else existing.plays += 1;
     }
   }
 
-  const topToday = [...counts.entries()]
-    .toSorted((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([name, plays]) => `${name} (${plays}x)`);
+  const ids: string[] = [];
+  const topToday = [...counts.values()]
+    .toSorted((a, b) => b.plays - a.plays)
+    .slice(0, 10)
+    .map((artist) => {
+      if (artist.id !== null) ids.push(artist.id);
+      const suffix = artist.id === null ? "" : ` [${artist.id}]`;
+      return `${artist.name}${suffix} (${artist.plays}x)`;
+    });
 
   const recentTitles = played.slice(0, 25).map((entry) => {
     const id = entry.track.id;
+    if (id !== null) ids.push(id);
     const title = `${entry.track.name} — ${entry.track.artists[0]?.name ?? "?"}`;
     return id === null ? title : `${title} [${id}]`;
   });
 
   const oldest = played.at(-1)?.at;
 
-  return [
+  const text = [
     `Play history (Spotify exposes only the last 50 plays${
       oldest === undefined ? "" : `, oldest from ${oldest.toLocaleString("en-GB")}`
     }):`,
@@ -144,12 +170,15 @@ function describeHistory(history: History, now: Date): string | undefined {
       : `Today: ${todayPlays.length} plays. Most frequent: ${topToday.join(", ")}.`,
     `Most recent plays in order: ${recentTitles.join("; ")}.`,
   ].join("\n");
+
+  return { text, ids };
 }
 
 export const ASK_SYSTEM = `You answer questions about a Spotify user's music library, and you can offer an action.
 
 Answer:
-- English, concise — a few sentences, unless the question calls for a list.
+- Reply in the same language the question was asked in.
+- Concise — a few sentences, unless the question calls for a list.
 - Work from the data provided; use your own knowledge of artists and tracks to interpret it.
 - If the data is not there, say so plainly instead of guessing.
 - Never invent numbers or titles that are not in the data.
@@ -158,9 +187,10 @@ Answer:
 - Do not paste ids or links into the answer text; put them in references instead.
 
 References:
-- List the tracks, artists or playlists you actually named, using the id shown in [brackets].
-- Only ids that appear in the data. Never invent one.
-- At most eight, and only for things worth clicking.
+- Include EVERY track, artist and playlist you name in the answer and that has an id in the
+  data — not just the first one. If you mention six artists, reference all six.
+- Use the id shown in [brackets]. Only ids that appear in the data; never invent one.
+- Label each with the name as a person would read it. At most eight.
 
 Action — include one ONLY when the user is asking for something to be done, not merely described:
 - "sort/organise/clean up my library" → kind "organize-library", with a prompt describing what they asked for.

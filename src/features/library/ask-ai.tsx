@@ -89,6 +89,15 @@ export function AskAi({ enabled }: AskAiProps) {
         }
       }
       /* eslint-enable no-await-in-loop */
+
+      /*
+       * A final message without a trailing newline would otherwise sit in the
+       * buffer unread — and that last message is the one carrying the links
+       * and the action.
+       */
+      if (buffer.trim() !== "") {
+        applyMessage(buffer, { setAnswer, setReferences, setAction, setError });
+      }
     } catch {
       if (!controller.signal.aborted) setError("Connection interrupted.");
     } finally {
@@ -179,7 +188,16 @@ export function AskAi({ enabled }: AskAiProps) {
                 )}
               >
                 {error ?? answer}
-                {busy && <span className="ml-0.5 animate-pulse text-accent">▍</span>}
+                {busy && (
+                  /*
+                   * A drawn block, not the ▍ glyph: that character sits on the
+                   * baseline differently in every font and rendered offset.
+                   */
+                  <span
+                    aria-hidden="true"
+                    className="ml-1 inline-block h-[1em] w-[2px] translate-y-[0.15em] animate-pulse rounded-[1px] bg-accent align-baseline"
+                  />
+                )}
               </p>
 
               {references.length > 0 && <ReferenceList references={references} />}
