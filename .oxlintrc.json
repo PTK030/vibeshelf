@@ -1,0 +1,62 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "react-perf", "unicorn", "typescript", "oxc", "import", "promise", "nextjs"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error"
+  },
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "typescript/consistent-type-definitions": ["error", "interface"],
+    "typescript/no-non-null-assertion": "error",
+    "no-nested-ternary": "error",
+    "no-unneeded-ternary": "error",
+    "no-shadow": "error",
+    "complexity": [
+      "error",
+      {
+        "max": 20
+      }
+    ],
+    "max-depth": [
+      "error",
+      {
+        "max": 4
+      }
+    ],
+    "max-nested-callbacks": [
+      "error",
+      {
+        "max": 3
+      }
+    ],
+    "react/jsx-max-depth": [
+      "error",
+      {
+        "max": 6
+      }
+    ],
+    "react/no-array-index-key": "error",
+    "react/button-has-type": "error",
+    "react/jsx-no-constructed-context-values": "error",
+    "react-hooks/exhaustive-deps": "error",
+    "react-perf/jsx-no-new-array-as-prop": "error",
+    "react-perf/jsx-no-new-function-as-prop": "error",
+    "react-perf/jsx-no-new-object-as-prop": "error",
+    "promise/always-return": "error",
+    "unicorn/prefer-node-protocol": "error",
+    "react/react-in-jsx-scope": "off",
+    "import/no-unassigned-import": [
+      "error",
+      {
+        "allow": ["**/*.css"]
+      }
+    ]
+  },
+  "ignorePatterns": [".next", "node_modules", "src/lib/db/migrations", "next-env.d.ts"]
+}

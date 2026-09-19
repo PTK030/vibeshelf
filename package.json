@@ -1,0 +1,56 @@
+{
+  "name": "spotify-ai-organizer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1 -p 3000",
+    "build": "next build",
+    "start": "next start -H 127.0.0.1 -p 3000",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt .",
+    "format:files": "oxfmt",
+    "format:check": "oxfmt --check .",
+    "format:check:files": "oxfmt --check",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "knip": "knip",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "prepare": "lefthook install --force"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "@openrouter/ai-sdk-provider": "^3.1.0",
+    "ai": "^7.0.107",
+    "clsx": "^2.1.1",
+    "drizzle-orm": "^0.45.2",
+    "jose": "^6.2.12",
+    "next": "16.3.5",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^22.20.4",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv": "^18.0.1",
+    "drizzle-kit": "^0.31.10",
+    "knip": "^6.37.0",
+    "lefthook": "^2.1.14",
+    "oxfmt": "^0.68.0",
+    "oxlint": "^1.83.0",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^5.0.1"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

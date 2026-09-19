@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "src/app/**/{page,layout,route,default,error,loading,not-found,template}.{ts,tsx}",
+    "proxy.ts",
+    "next.config.ts",
+    "drizzle.config.ts",
+    "vitest.config.ts"
+  ],
+  "project": ["src/**/*.{ts,tsx}", "*.{ts,mjs}"],
+  "ignore": ["src/lib/db/migrations/**", "next-env.d.ts"],
+  "ignoreDependencies": ["@tailwindcss/postcss", "tailwindcss"]
+}
