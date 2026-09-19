@@ -20,6 +20,8 @@
     "prepare": "lefthook install --force"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.58",
+    "@ai-sdk/openai": "^4.0.71",
     "@openrouter/ai-sdk-provider": "^3.1.0",
     "ai": "^7.0.107",
     "clsx": "^2.1.1",

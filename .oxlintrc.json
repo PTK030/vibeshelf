@@ -58,5 +58,16 @@
       }
     ]
   },
-  "ignorePatterns": [".next", "node_modules", "next-env.d.ts"]
+  "ignorePatterns": [".next", "node_modules", "next-env.d.ts"],
+  "overrides": [
+    {
+      "files": ["src/app/**/page.tsx", "src/app/**/layout.tsx", "src/app/**/template.tsx"],
+      "rules": {
+        "react-perf/jsx-no-new-array-as-prop": "off",
+        "react-perf/jsx-no-new-object-as-prop": "off",
+        "react-perf/jsx-no-new-function-as-prop": "off",
+        "react/purity": "off"
+      }
+    }
+  ]
 }

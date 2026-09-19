@@ -47,8 +47,14 @@ There is no database — see `docs/architecture.md`.
 - **NEVER assume a batch Spotify endpoint exists.** They were removed in February 2026.
 - **NEVER treat `invalid_grant` as retryable.** It means the 6-month refresh token expired:
   discard it and send the user through consent again.
-- **NEVER call an LLM without `provider: { require_parameters: true }`** when relying on
-  structured output. Routing can otherwise land on a provider that ignores `response_format`.
+- **NEVER call OpenRouter without `provider: { require_parameters: true }`** when relying on
+  structured output. Routing can otherwise land on an endpoint that ignores `response_format`.
+- **NEVER add "sign in with Claude".** Anthropic banned third-party use of Claude
+  Free/Pro/Max OAuth tokens in February 2026 and enforces it server-side; a Console API key
+  is the only sanctioned route. OpenAI's "Sign in with ChatGPT" is still Codex-only.
+- **NEVER build an auth redirect from `request.url`.** Next normalises it to localhost
+  whatever host was used, which moves the browser off the origin holding the session
+  cookie. Use `redirectToPath()`.
 - **NEVER let the model see or return Spotify IDs.** It works on local chunk indices, so a
   hallucinated ID is structurally impossible.
 - **NEVER write to Spotify without the user approving a plan first.** Analysis is read-only.

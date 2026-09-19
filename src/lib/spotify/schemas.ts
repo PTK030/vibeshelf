@@ -90,3 +90,19 @@ export const CreatedPlaylistSchema = z.object({
   name: z.string(),
   external_urls: z.object({ spotify: z.string() }).optional(),
 });
+
+export const TopArtistsSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      genres: z.array(z.string()).optional(),
+      images: z.array(ImageSchema).optional(),
+      external_urls: z.object({ spotify: z.string() }).optional(),
+    }),
+  ),
+});
+
+export const TopTracksSchema = z.object({
+  items: z.array(TrackSchema),
+});

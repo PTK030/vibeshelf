@@ -1,20 +1,31 @@
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createOpenAI } from "@ai-sdk/openai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateObject } from "ai";
+import type { LanguageModel } from "ai";
 import type { z } from "zod";
+import type { ProviderId } from "@/lib/ai/providers";
+
+const APP_HEADERS = {
+  "HTTP-Referer": "https://github.com/PTK030/spotify-ai-organizer",
+  "X-OpenRouter-Title": "Vibeshelf",
+};
 
 /*
  * Structured-output support on OpenRouter is per *endpoint*, not per model: the
- * same model served by a different provider may quietly ignore response_format
- * and answer in prose. require_parameters routes around those providers, so it
- * is not optional here.
+ * same model served by another provider can quietly ignore response_format and
+ * answer in prose. require_parameters routes around those, so it is mandatory.
+ *
+ * Anthropic and OpenAI are called directly, so there is no routing to guard.
  */
-const PROVIDER_ROUTING = {
+const OPENROUTER_ROUTING = {
   require_parameters: true,
   allow_fallbacks: true,
   data_collection: "deny",
 } as const;
 
 export interface GenerateOptions<T> {
+  provider: ProviderId;
   apiKey: string;
   model: string;
   schema: z.ZodType<T>;
@@ -22,8 +33,6 @@ export interface GenerateOptions<T> {
   prompt: string;
   temperature?: number;
   maxOutputTokens?: number;
-  /* Tried in order if the primary model fails or is rate limited. */
-  fallbackModels?: readonly string[];
   abortSignal?: AbortSignal;
 }
 
@@ -43,30 +52,26 @@ export class AiCallError extends Error {
   }
 }
 
+function resolveModel(provider: ProviderId, apiKey: string, model: string): LanguageModel {
+  if (provider === "anthropic") {
+    return createAnthropic({ apiKey })(model);
+  }
+
+  if (provider === "openai") {
+    return createOpenAI({ apiKey })(model);
+  }
+
+  return createOpenRouter({ apiKey, headers: APP_HEADERS }).chat(model, {
+    extraBody: { provider: OPENROUTER_ROUTING },
+  });
+}
+
 export async function generateStructured<T>(
   options: GenerateOptions<T>,
 ): Promise<GenerateResult<T>> {
-  const openrouter = createOpenRouter({
-    apiKey: options.apiKey,
-    headers: {
-      /* Attribution on OpenRouter's leaderboards; harmless if ignored. */
-      "HTTP-Referer": "https://github.com/PTK030/spotify-ai-organizer",
-      "X-OpenRouter-Title": "Vibeshelf",
-    },
-  });
-
-  const model = openrouter.chat(options.model, {
-    extraBody: {
-      provider: PROVIDER_ROUTING,
-      ...(options.fallbackModels === undefined || options.fallbackModels.length === 0
-        ? {}
-        : { models: [options.model, ...options.fallbackModels] }),
-    },
-  });
-
   try {
     const result = await generateObject({
-      model,
+      model: resolveModel(options.provider, options.apiKey, options.model),
       schema: options.schema,
       system: options.system,
       prompt: options.prompt,

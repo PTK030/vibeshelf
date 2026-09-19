@@ -3,8 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/layout/app-header";
 import { AttributionFooter } from "@/components/layout/attribution-footer";
-import { Card } from "@/components/ui/card";
 import { OrganizePanel, type ModelChoice } from "@/features/organize/organize-panel";
+import { providerMeta } from "@/lib/ai/providers";
 import { requireSession } from "@/lib/auth/require-session";
 import { listStructuredOutputModels } from "@/lib/openrouter/client";
 import { SpotifyClient } from "@/lib/spotify/client";
@@ -12,10 +12,7 @@ import { SpotifyClient } from "@/lib/spotify/client";
 export const metadata: Metadata = { title: "Organizuj" };
 export const dynamic = "force-dynamic";
 
-/*
- * Sensible defaults surfaced first. Every model in the list supports structured
- * outputs; these are simply the ones worth reaching for by default.
- */
+/* Surfaced first among OpenRouter's several hundred structured-output models. */
 const PREFERRED = [
   "google/gemini-2.5-flash",
   "openai/gpt-4o-mini",
@@ -31,50 +28,74 @@ function orderModels(models: ModelChoice[]): ModelChoice[] {
   return models.toSorted((a, b) => rank(a.id) - rank(b.id) || a.name.localeCompare(b.name));
 }
 
-export default async function OrganizePage() {
+export default async function OrganizePage(props: PageProps<"/organizuj">) {
+  const search = await props.searchParams;
+  const presetPrompt = typeof search.prompt === "string" ? search.prompt : undefined;
+
   const session = await requireSession();
-  if (session.openrouterKey === undefined) redirect("/start");
+  const ai = session.ai;
+  if (ai === undefined) redirect("/start");
 
   const client = new SpotifyClient(session.accessToken);
+  const meta = providerMeta(ai.provider);
 
-  const [liked, models] = await Promise.all([
+  /*
+   * Only OpenRouter has a catalogue worth fetching. Anthropic and OpenAI are a
+   * short curated list, so they come from config and cost no request.
+   */
+  const [liked, openrouterModels] = await Promise.all([
     client.savedTracksPage(0, 1),
-    listStructuredOutputModels(session.openrouterKey).catch(() => []),
+    ai.provider === "openrouter"
+      ? listStructuredOutputModels(ai.key).catch(() => [])
+      : Promise.resolve([]),
   ]);
 
-  const choices = orderModels(
-    models.map((model) => ({
-      id: model.id,
-      name: model.name,
-      promptPerMillion: model.promptPerMillion,
-    })),
-  );
+  const choices: ModelChoice[] =
+    ai.provider === "openrouter"
+      ? orderModels(
+          openrouterModels.map((model) => ({
+            id: model.id,
+            name: model.name,
+            promptPerMillion: model.promptPerMillion,
+          })),
+        )
+      : meta.models.map((model) => ({
+          id: model.id,
+          name: `${model.name} — ${model.hint}`,
+          promptPerMillion: undefined,
+        }));
+
+  /* Keep the saved model selectable even if it is far down OpenRouter's list. */
+  const ordered =
+    choices.length === 0 || choices.some((choice) => choice.id === ai.model)
+      ? choices
+      : [{ id: ai.model, name: ai.model, promptPerMillion: undefined }, ...choices];
 
   return (
     <>
-      <AppHeader displayName={session.displayName ?? undefined} showSignOut />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
-        <Link href="/biblioteka" className="text-xs text-muted hover:text-foreground">
+      <AppHeader session={session} />
+      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
+        <Link
+          href="/biblioteka"
+          className="text-xs text-muted transition-colors duration-350 ease-smooth hover:text-foreground"
+        >
           ← Biblioteka
         </Link>
 
         <h1 className="mt-4 text-xl font-bold">Zaproponuj playlisty</h1>
         <p className="mt-3 text-sm text-muted">
           Przeanalizuję {Math.min(liked.total, 1500).toLocaleString("pl-PL")} z{" "}
-          {liked.total.toLocaleString("pl-PL")} polubionych utworów. Nic nie zostanie zapisane,
-          dopóki nie zatwierdzisz propozycji.
+          {liked.total.toLocaleString("pl-PL")} polubionych utworów przez {meta.name}. Nic nie
+          zostanie zapisane, dopóki nie zatwierdzisz propozycji.
         </p>
 
         <div className="mt-8">
-          {choices.length === 0 ? (
-            <Card>
-              <p className="text-sm text-danger">
-                Nie udało się pobrać listy modeli z OpenRouter. Sprawdź klucz w ustawieniach.
-              </p>
-            </Card>
-          ) : (
-            <OrganizePanel models={choices} likedCount={liked.total} />
-          )}
+          <OrganizePanel
+            models={ordered}
+            likedCount={liked.total}
+            selectedModel={ai.model}
+            presetPrompt={presetPrompt}
+          />
         </div>
       </main>
       <AttributionFooter />

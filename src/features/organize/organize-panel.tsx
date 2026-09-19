@@ -26,6 +26,10 @@ export interface ModelChoice {
 interface OrganizePanelProps {
   models: ModelChoice[];
   likedCount: number;
+  /* The model saved on the session, so the choice survives a reload. */
+  selectedModel: string;
+  /* Prefilled brief when arriving from a quick action on the library page. */
+  presetPrompt?: string;
 }
 
 /*
@@ -45,11 +49,16 @@ const POP = {
   exit: { opacity: 0, scale: 0.94 },
 };
 
-export function OrganizePanel({ models, likedCount }: OrganizePanelProps) {
+export function OrganizePanel({
+  models,
+  likedCount,
+  selectedModel,
+  presetPrompt,
+}: OrganizePanelProps) {
   const { state, start, cancel } = useOrganizeStream();
   const [preferences, setPreferences] = useState<Preferences>(DEFAULT_PREFERENCES);
-  const [prompt, setPrompt] = useState("");
-  const [model, setModel] = useState(models[0]?.id ?? "");
+  const [prompt, setPrompt] = useState(presetPrompt ?? "");
+  const [model, setModel] = useState(selectedModel || (models[0]?.id ?? ""));
 
   /*
    * localStorage is genuinely an external system and is unavailable during

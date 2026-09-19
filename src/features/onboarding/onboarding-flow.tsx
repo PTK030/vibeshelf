@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { KeyStep } from "@/features/onboarding/key-step";
+import { ProviderStep } from "@/features/onboarding/provider-step";
 import { PreferencesStep } from "@/features/onboarding/preferences-step";
 import { WelcomeStep } from "@/features/onboarding/welcome-step";
 import {
@@ -11,6 +11,7 @@ import {
   savePreferences,
 } from "@/features/onboarding/preferences";
 import { SECTION_TRANSITION } from "@/lib/motion";
+import type { ProviderId } from "@/lib/ai/providers";
 import { cn } from "@/lib/cn";
 
 const STEPS = ["welcome", "key", "preferences"] as const;
@@ -27,10 +28,10 @@ const TRANSITION = SECTION_TRANSITION;
 
 interface OnboardingFlowProps {
   displayName: string;
-  hasKey: boolean;
+  connected: ProviderId | undefined;
 }
 
-export function OnboardingFlow({ displayName, hasKey }: OnboardingFlowProps) {
+export function OnboardingFlow({ displayName, connected }: OnboardingFlowProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [preferences, setPreferences] = useState<Preferences>(DEFAULT_PREFERENCES);
@@ -70,7 +71,7 @@ export function OnboardingFlow({ displayName, hasKey }: OnboardingFlowProps) {
             <StepBody
               step={step}
               displayName={displayName}
-              hasKey={hasKey}
+              connected={connected}
               preferences={preferences}
               onPreferencesChange={handlePreferencesChange}
               onNext={goNext}
@@ -86,7 +87,7 @@ export function OnboardingFlow({ displayName, hasKey }: OnboardingFlowProps) {
 interface StepBodyProps {
   step: Step;
   displayName: string;
-  hasKey: boolean;
+  connected: ProviderId | undefined;
   preferences: Preferences;
   onPreferencesChange: (next: Preferences) => void;
   onNext: () => void;
@@ -96,14 +97,16 @@ interface StepBodyProps {
 function StepBody({
   step,
   displayName,
-  hasKey,
+  connected,
   preferences,
   onPreferencesChange,
   onNext,
   onBack,
 }: StepBodyProps) {
   if (step === "welcome") return <WelcomeStep displayName={displayName} onNext={onNext} />;
-  if (step === "key") return <KeyStep hasKey={hasKey} onNext={onNext} onBack={onBack} />;
+  if (step === "key") {
+    return <ProviderStep connected={connected} onNext={onNext} onBack={onBack} />;
+  }
 
   return (
     <PreferencesStep preferences={preferences} onChange={onPreferencesChange} onBack={onBack} />

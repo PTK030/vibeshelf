@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { EncryptJWT, jwtDecrypt } from "jose";
 import { z } from "zod";
+import { ProviderIdSchema } from "@/lib/ai/providers";
 import { serverEnv } from "@/lib/env";
 
 const SESSION_COOKIE = "vs_session";
@@ -26,7 +27,25 @@ const SessionSchema = z.object({
   /* Epoch millis of the ORIGINAL consent — drives the 6-month expiry warning. */
   authorizedAt: z.number(),
   scopes: z.array(z.string()),
-  openrouterKey: z.string().optional(),
+  /*
+   * The AI backend the user brought. Held here rather than in a database for
+   * the same reason as the Spotify tokens: there is no database.
+   */
+  ai: z
+    .object({
+      provider: ProviderIdSchema,
+      key: z.string(),
+      model: z.string(),
+    })
+    .optional(),
+  /* Per-viewer app settings that the server also needs to honour. */
+  settings: z
+    .object({
+      deepAnalysis: z.boolean(),
+      playlistScoring: z.boolean(),
+      realtimeSuggestions: z.boolean(),
+    })
+    .optional(),
 });
 
 export type Session = z.infer<typeof SessionSchema>;

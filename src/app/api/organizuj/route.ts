@@ -34,8 +34,8 @@ export async function POST(request: Request) {
   if (session === undefined) {
     return Response.json({ error: "Brak sesji" }, { status: 401 });
   }
-  if (session.openrouterKey === undefined) {
-    return Response.json({ error: "Brak klucza OpenRouter" }, { status: 400 });
+  if (session.ai === undefined) {
+    return Response.json({ error: "Brak podłączonego dostawcy AI" }, { status: 400 });
   }
 
   const parsed = RequestSchema.safeParse(await request.json());
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Nieprawidłowe dane" }, { status: 400 });
   }
   const input = parsed.data;
-  const apiKey = session.openrouterKey;
+  const ai = session.ai;
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -122,7 +122,8 @@ export async function POST(request: Request) {
         const result = await organizeLibrary(
           library.tracks,
           {
-            apiKey,
+            provider: ai.provider,
+            apiKey: ai.key,
             taxonomyModel: input.taxonomyModel,
             classifyModel: input.classifyModel,
             userPrompt: input.userPrompt,
@@ -143,7 +144,8 @@ export async function POST(request: Request) {
           send("phase", { phase: "scoring", label: "Oceniam dopasowanie playlist" });
           try {
             const scores = await scorePlaylists(result.playlists, {
-              apiKey,
+              provider: ai.provider,
+              apiKey: ai.key,
               taxonomyModel: input.taxonomyModel,
               classifyModel: input.classifyModel,
               signal: request.signal,

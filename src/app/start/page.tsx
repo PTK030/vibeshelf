@@ -13,11 +13,11 @@ export default async function StartPage() {
 
   return (
     <>
-      <AppHeader displayName={session.displayName ?? undefined} showSignOut />
+      <AppHeader session={session} />
       <main className="flex flex-1 items-start justify-center px-6 py-16 sm:items-center">
         <OnboardingFlow
           displayName={session.displayName ?? "melomanie"}
-          hasKey={session.openrouterKey !== undefined}
+          connected={session.ai?.provider}
         />
       </main>
       <AttributionFooter />

@@ -1,39 +1,35 @@
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
+import { UserMenu } from "@/components/layout/user-menu";
+import { providerMeta } from "@/lib/ai/providers";
+import type { Session } from "@/lib/auth/session";
 
 interface AppHeaderProps {
-  /* Shown on the right when someone is signed in. */
-  displayName?: string;
-  showSignOut?: boolean;
+  /* Omitted on the landing page, where nobody is signed in yet. */
+  session?: Session;
 }
 
-export function AppHeader({ displayName, showSignOut = false }: AppHeaderProps) {
+export function AppHeader({ session }: AppHeaderProps) {
   return (
-    <header className="border-b border-border bg-base/80 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border bg-base/85 backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-6">
         <Link
-          href="/"
+          href={session === undefined ? "/" : "/biblioteka"}
           className="rounded-sm transition-opacity duration-350 ease-smooth hover:opacity-75"
           aria-label="Strona główna"
         >
           <Logo />
         </Link>
 
-        <div className="flex items-center gap-4">
-          {displayName !== undefined && (
-            <span className="hidden text-xs text-muted sm:inline">{displayName}</span>
-          )}
-          {showSignOut && (
-            <form action="/api/auth/logout" method="post">
-              <button
-                type="submit"
-                className="rounded-pill px-3 py-1.5 text-2xs text-muted transition-colors duration-350 ease-smooth hover:bg-surface-hover hover:text-foreground"
-              >
-                Wyloguj
-              </button>
-            </form>
-          )}
-        </div>
+        {session !== undefined && (
+          <UserMenu
+            displayName={session.displayName}
+            imageUrl={session.imageUrl}
+            providerName={
+              session.ai === undefined ? undefined : providerMeta(session.ai.provider).name
+            }
+          />
+        )}
       </div>
     </header>
   );

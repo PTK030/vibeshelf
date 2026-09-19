@@ -15,6 +15,7 @@ import {
   TaxonomySchema,
   buildChunkSchema,
 } from "@/lib/ai/schemas";
+import type { ProviderId } from "@/lib/ai/providers";
 import type { EnrichedTrack } from "@/lib/library/track";
 
 export const CHUNK_SIZE = 150;
@@ -22,6 +23,7 @@ const CHUNK_CONCURRENCY = 4;
 const TAXONOMY_SAMPLE = 120;
 
 export interface OrganizeConfig {
+  provider: ProviderId;
   apiKey: string;
   taxonomyModel: string;
   classifyModel: string;
@@ -117,6 +119,7 @@ export async function proposeTaxonomy(
   });
 
   const result = await generateStructured({
+    provider: config.provider,
     apiKey: config.apiKey,
     model: config.taxonomyModel,
     schema: TaxonomySchema,
@@ -189,6 +192,7 @@ async function runChunks(runner: ChunkRunner): Promise<void> {
 
       try {
         const result = await generateStructured({
+          provider: runner.config.provider,
           apiKey: runner.config.apiKey,
           model: runner.config.classifyModel,
           schema: runner.schema,
@@ -307,6 +311,7 @@ export async function scorePlaylists(
     .join("\n");
 
   const result = await generateStructured({
+    provider: config.provider,
     apiKey: config.apiKey,
     model: config.taxonomyModel,
     schema: PlaylistScoresSchema,

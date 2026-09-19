@@ -11,6 +11,8 @@ import {
   CurrentUserSchema,
   PlaylistPageSchema,
   SavedTracksPageSchema,
+  TopArtistsSchema,
+  TopTracksSchema,
 } from "@/lib/spotify/schemas";
 
 const API_BASE = "https://api.spotify.com/v1";
@@ -106,6 +108,28 @@ export class SpotifyClient {
 
   async playlistsPage(offset: number, limit = 50) {
     return await this.request(`/me/playlists?limit=${limit}&offset=${offset}`, PlaylistPageSchema);
+  }
+
+  /*
+   * Top items double as a cheap taste profile: one request each, and the
+   * artist objects carry genres, so the library page gets real content
+   * without the hundreds of per-artist lookups a full scan would need.
+   */
+  async topArtists(
+    limit = 8,
+    timeRange: "short_term" | "medium_term" | "long_term" = "medium_term",
+  ) {
+    return await this.request(
+      `/me/top/artists?limit=${limit}&time_range=${timeRange}`,
+      TopArtistsSchema,
+    );
+  }
+
+  async topTracks(limit = 5, timeRange: "short_term" | "medium_term" | "long_term" = "short_term") {
+    return await this.request(
+      `/me/top/tracks?limit=${limit}&time_range=${timeRange}`,
+      TopTracksSchema,
+    );
   }
 
   /* One request per artist — the batch endpoint was removed in February 2026. */
