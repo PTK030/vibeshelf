@@ -60,9 +60,31 @@ Button labels: uppercase, weight 700, `letter-spacing: 0.1em`.
 
 ## Motion
 
-`--duration-fast: 150ms`, `--duration-base: 200ms`. Button hover `scale(1.04)`.
-Onboarding transitions use Framer Motion; everything else uses CSS transitions.
+`--duration-fast: 180ms`, `--duration-base: 280ms`, `--duration-slow: 420ms`.
+
+Easing matters more than duration here. A plain `ease-out` decelerates almost
+linearly, which is what makes a short transition read as an on/off switch —
+`--ease-smooth` (`cubic-bezier(0.22, 1, 0.36, 1)`) leaves fast and settles slow,
+so the eye sees movement instead of a state change. `--ease-spring` adds a
+slight overshoot, used only on the toggle knob.
+
+Framer Motion mirrors these in `src/lib/motion.ts`. Keep the two in sync, or
+CSS and JS animation will visibly drift apart.
+
+Anything that appears or disappears conditionally belongs in `AnimatePresence`
+with an exit variant. Mounting straight into the tree is the other half of what
+makes UI feel binary.
+
 `prefers-reduced-motion` is honoured globally in `globals.css`.
 
 Framer Motion takes object props, which trips `react-perf/jsx-no-new-object-as-prop`.
-Hoist animation objects to module constants rather than suppressing the rule.
+Hoist animation objects to module constants, or use `variants` with `custom`
+for per-item delays, rather than suppressing the rule.
+
+## Logo
+
+A geometric V monogram (`src/components/layout/logo.tsx`, mirrored in
+`src/app/icon.svg`). The first attempt was three vertical bars — that is the
+equaliser motif every Spotify-stats app already uses, and too close to
+Spotify's own visual language. The mark must not contain a circle, sound waves
+or their green in a way that reads as their logo.

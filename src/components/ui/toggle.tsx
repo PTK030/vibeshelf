@@ -21,7 +21,7 @@ export function Toggle({ checked, onChange, label, description, disabled = false
     <label
       className={cn(
         "flex cursor-pointer items-start justify-between gap-4 rounded-md p-4",
-        "bg-surface transition-colors duration-150 hover:bg-surface-hover",
+        "bg-surface transition-colors duration-180 ease-smooth hover:bg-surface-hover",
         disabled && "cursor-not-allowed opacity-60",
       )}
     >
@@ -44,7 +44,7 @@ export function Toggle({ checked, onChange, label, description, disabled = false
         <span
           aria-hidden="true"
           className={cn(
-            "block h-6 w-11 rounded-pill transition-colors duration-200",
+            "block h-6 w-11 rounded-pill transition-colors duration-280 ease-smooth",
             "peer-focus-visible:outline peer-focus-visible:outline-2",
             "peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent",
             checked ? "bg-accent" : "bg-border-strong",
@@ -53,7 +53,7 @@ export function Toggle({ checked, onChange, label, description, disabled = false
         <span
           aria-hidden="true"
           className={cn(
-            "absolute top-1 left-1 size-4 rounded-full bg-background transition-transform duration-200",
+            "absolute top-1 left-1 size-4 rounded-full bg-background transition-transform duration-280 ease-spring",
             checked && "translate-x-5",
           )}
         />

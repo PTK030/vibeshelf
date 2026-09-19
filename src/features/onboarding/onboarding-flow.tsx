@@ -10,6 +10,7 @@ import {
   type Preferences,
   savePreferences,
 } from "@/features/onboarding/preferences";
+import { SECTION_TRANSITION } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 
 const STEPS = ["welcome", "key", "preferences"] as const;
@@ -22,7 +23,7 @@ const VARIANTS = {
   exit: (direction: number) => ({ opacity: 0, x: direction > 0 ? -32 : 32 }),
 };
 
-const TRANSITION = { duration: 0.28, ease: [0.22, 1, 0.36, 1] } as const;
+const TRANSITION = SECTION_TRANSITION;
 
 interface OnboardingFlowProps {
   displayName: string;
@@ -123,7 +124,7 @@ function StepDots({ total, activeIndex }: StepDotsProps) {
         <span
           key={index}
           className={cn(
-            "h-1 rounded-pill transition-[width,background-color] duration-300 ease-out",
+            "h-1 rounded-pill transition-[width,background-color] duration-420 ease-smooth",
             index <= activeIndex ? "bg-accent" : "bg-border-strong",
             index === activeIndex ? "w-8" : "w-3",
           )}

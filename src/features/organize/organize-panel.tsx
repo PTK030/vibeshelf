@@ -1,19 +1,20 @@
 "use client";
 
 import { type ChangeEvent, useCallback, useEffect, useState } from "react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Toggle } from "@/components/ui/toggle";
 import { PlanPreview } from "@/features/organize/plan-preview";
-import { useOrganizeStream } from "@/features/organize/use-organize-stream";
+import { type StreamState, useOrganizeStream } from "@/features/organize/use-organize-stream";
 import {
   DEFAULT_PREFERENCES,
   loadPreferences,
   savePreferences,
 } from "@/features/onboarding/preferences";
 import type { Preferences } from "@/features/onboarding/preferences";
+import { POP_TRANSITION, SECTION_TRANSITION } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 
 export interface ModelChoice {
@@ -27,8 +28,22 @@ interface OrganizePanelProps {
   likedCount: number;
 }
 
-const FADE_IN = { opacity: 0, y: 8 };
-const VISIBLE = { opacity: 1, y: 0 };
+/*
+ * Hoisted so Framer Motion is not handed a fresh object every render, and so
+ * every section enters and leaves on the same curve. Conditional rendering
+ * without an exit animation is what made this feel like a light switch.
+ */
+const SECTION = {
+  initial: { opacity: 0, y: 12, height: 0 },
+  animate: { opacity: 1, y: 0, height: "auto" },
+  exit: { opacity: 0, y: -8, height: 0 },
+};
+
+const POP = {
+  initial: { opacity: 0, scale: 0.94 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.94 },
+};
 
 export function OrganizePanel({ models, likedCount }: OrganizePanelProps) {
   const { state, start, cancel } = useOrganizeStream();
@@ -155,38 +170,97 @@ export function OrganizePanel({ models, likedCount }: OrganizePanelProps) {
         <Button size="lg" onClick={handleStart} disabled={state.running || model === ""}>
           {state.running ? "Analizuję..." : "Uruchom analizę"}
         </Button>
-        {state.running && (
-          <Button variant="secondary" size="lg" onClick={cancel}>
-            Przerwij
-          </Button>
-        )}
+        <AnimatePresence initial={false}>
+          {state.running && (
+            <motion.div
+              key="cancel"
+              initial={POP.initial}
+              animate={POP.animate}
+              exit={POP.exit}
+              transition={POP_TRANSITION}
+            >
+              <Button variant="secondary" size="lg" onClick={cancel}>
+                Przerwij
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {(state.running || state.plan !== undefined) && (
-        <motion.div initial={FADE_IN} animate={VISIBLE}>
-          <Card className="flex flex-col gap-4">
-            <Progress value={state.progress} label={state.label || "Pracuję..."} />
-            {preferences.realtimeSuggestions && state.library !== undefined && (
-              <LiveNotes
-                tracks={state.library.tracks}
-                duplicates={state.library.duplicatesRemoved}
-                genreCoverage={state.library.genreCoverage}
-                featureCoverage={state.library.featureCoverage}
-                nameOnly={state.library.nameOnlyMode}
-              />
-            )}
-          </Card>
+      <AnimatePresence initial={false} mode="popLayout">
+        {(state.running || state.plan !== undefined) && (
+          <motion.div
+            key="progress"
+            initial={SECTION.initial}
+            animate={SECTION.animate}
+            exit={SECTION.exit}
+            transition={SECTION_TRANSITION}
+            className="overflow-hidden"
+          >
+            <Card className="flex flex-col gap-4">
+              <Progress value={state.progress} label={state.label || "Pracuję..."} />
+              <LiveNotesSection show={preferences.realtimeSuggestions} library={state.library} />
+            </Card>
+          </motion.div>
+        )}
+
+        {state.error !== undefined && (
+          <motion.div
+            key="error"
+            initial={SECTION.initial}
+            animate={SECTION.animate}
+            exit={SECTION.exit}
+            transition={SECTION_TRANSITION}
+            className="overflow-hidden"
+          >
+            <Card className="border border-danger/40">
+              <p className="text-sm text-danger">{state.error}</p>
+            </Card>
+          </motion.div>
+        )}
+
+        {state.plan !== undefined && (
+          <motion.div
+            key="plan"
+            initial={SECTION.initial}
+            animate={SECTION.animate}
+            exit={SECTION.exit}
+            transition={SECTION_TRANSITION}
+          >
+            <PlanPreview plan={state.plan} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+interface LiveNotesSectionProps {
+  show: boolean;
+  library: StreamState["library"];
+}
+
+function LiveNotesSection({ show, library }: LiveNotesSectionProps) {
+  return (
+    <AnimatePresence initial={false}>
+      {show && library !== undefined && (
+        <motion.div
+          initial={SECTION.initial}
+          animate={SECTION.animate}
+          exit={SECTION.exit}
+          transition={SECTION_TRANSITION}
+          className="overflow-hidden"
+        >
+          <LiveNotes
+            tracks={library.tracks}
+            duplicates={library.duplicatesRemoved}
+            genreCoverage={library.genreCoverage}
+            featureCoverage={library.featureCoverage}
+            nameOnly={library.nameOnlyMode}
+          />
         </motion.div>
       )}
-
-      {state.error !== undefined && (
-        <Card className="border border-danger/40">
-          <p className="text-sm text-danger">{state.error}</p>
-        </Card>
-      )}
-
-      {state.plan !== undefined && <PlanPreview plan={state.plan} />}
-    </div>
+    </AnimatePresence>
   );
 }
 

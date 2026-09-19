@@ -8,25 +8,38 @@ interface LogoProps {
 }
 
 /*
- * Three bars of different heights: a shelf of records seen edge-on, which is
- * also where the name comes from. Deliberately nothing like Spotify's mark —
- * no circle, no waves — since their Developer Policy forbids resembling it.
- * Matches src/app/icon.svg.
+ * A geometric V monogram.
+ *
+ * The earlier mark was three vertical bars, which is the equaliser motif every
+ * Spotify-stats app already uses — recognisable as someone else's, and close
+ * enough to Spotify's own visual language to be a bad idea. A monogram is ours.
+ *
+ * Kept in sync with src/app/icon.svg.
  */
 export function Logo({ className, markOnly = false }: LogoProps) {
   return (
-    <span className={cn("group inline-flex items-center gap-2.5", className)}>
-      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false" className="size-7 shrink-0">
-        <rect width="32" height="32" rx="8" className="fill-surface" />
-        <g className="fill-accent transition-transform duration-300 ease-out">
-          <rect x="7" y="13" width="4" height="12" rx="2" />
-          <rect x="14" y="7" width="4" height="18" rx="2" />
-          <rect x="21" y="16" width="4" height="9" rx="2" />
-        </g>
+    <span className={cn("flex items-center gap-2.5", className)}>
+      <svg
+        viewBox="0 0 32 32"
+        aria-hidden="true"
+        focusable="false"
+        /* `block` kills the inline baseline gap that knocked this off-centre. */
+        className="block size-7 shrink-0"
+      >
+        <path
+          d="M8.5 9.5 L16 22.5 L23.5 9.5"
+          fill="none"
+          className="stroke-accent"
+          strokeWidth="4.25"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
 
       {!markOnly && (
-        <span className="text-base font-bold tracking-tight text-foreground">{BRAND.name}</span>
+        <span className="text-base leading-none font-bold tracking-tight text-foreground">
+          {BRAND.name}
+        </span>
       )}
     </span>
   );

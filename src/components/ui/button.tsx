@@ -57,7 +57,7 @@ export function Button({
 const BASE_CLASSES = [
   "label-caps inline-flex shrink-0 items-center justify-center gap-2 rounded-pill",
   "transition-[transform,background-color,border-color,box-shadow,color,filter]",
-  "duration-200 ease-out will-change-transform",
+  "duration-280 ease-smooth will-change-transform",
   "disabled:pointer-events-none disabled:opacity-50",
 ].join(" ");
 

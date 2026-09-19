@@ -25,7 +25,7 @@ export function Progress({ value, label, className }: ProgressProps) {
         className="h-1 w-full overflow-hidden rounded-pill bg-elevated"
       >
         <div
-          className="h-full rounded-pill bg-accent transition-[width] duration-200 ease-out"
+          className="h-full rounded-pill bg-accent transition-[width] duration-420 ease-smooth"
           /* A dynamic width cannot be a static class, and this is a server
              component, so the object identity has no re-render to affect. */
           // eslint-disable-next-line react-perf/jsx-no-new-object-as-prop

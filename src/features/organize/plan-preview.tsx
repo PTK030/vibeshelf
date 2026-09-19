@@ -1,12 +1,24 @@
 "use client";
 
 import { useCallback, useMemo, useState, useTransition } from "react";
+import { motion } from "motion/react";
+import { SECTION_TRANSITION } from "@/lib/motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { commitPlan, type CommitResult } from "@/features/organize/commit-action";
 import type { Plan, PlanPlaylist } from "@/features/organize/plan";
 import { PlaylistCard } from "@/features/organize/playlist-card";
+
+/* Variants keep the per-item delay out of JSX, so no new object per render. */
+const LIST_ITEM = {
+  hidden: { opacity: 0, y: 14 },
+  visible: (index: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: Math.min(index, 8) * 0.05, ...SECTION_TRANSITION },
+  }),
+};
 
 function toCommitPlaylist(playlist: PlanPlaylist) {
   return {
@@ -72,13 +84,20 @@ export function PlanPreview({ plan }: PlanPreviewProps) {
       </header>
 
       <div className="flex flex-col gap-3">
-        {plan.playlists.map((playlist) => (
-          <PlaylistCard
+        {plan.playlists.map((playlist, index) => (
+          <motion.div
             key={playlist.slug}
-            playlist={playlist}
-            disabled={disabled.has(playlist.slug)}
-            onToggle={toggle}
-          />
+            custom={index}
+            variants={LIST_ITEM}
+            initial="hidden"
+            animate="visible"
+          >
+            <PlaylistCard
+              playlist={playlist}
+              disabled={disabled.has(playlist.slug)}
+              onToggle={toggle}
+            />
+          </motion.div>
         ))}
       </div>
 

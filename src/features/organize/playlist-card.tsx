@@ -1,11 +1,30 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { OpenInSpotify } from "@/components/spotify/open-in-spotify";
 import type { PlanPlaylist } from "@/features/organize/plan";
+import { SECTION_TRANSITION } from "@/lib/motion";
 import { cn } from "@/lib/cn";
+
+function TrackLine({ track }: { track: PlanPlaylist["tracks"][number] }) {
+  const artists = track.artistNames.join(", ");
+
+  return (
+    <li className="flex items-center justify-between gap-3 rounded-sm px-1 py-1.5 transition-colors duration-180 ease-smooth hover:bg-surface-hover">
+      <span className="min-w-0 truncate text-xs">
+        <span className="text-foreground">{track.name}</span>
+        <span className="text-muted"> — {artists}</span>
+        {track.tempo !== undefined && (
+          <span className="text-disabled"> · {Math.round(track.tempo)} BPM</span>
+        )}
+      </span>
+      <OpenInSpotify url={track.spotifyUrl} label={`${track.name} — ${artists}`} />
+    </li>
+  );
+}
 
 interface PlaylistCardProps {
   playlist: PlanPlaylist;
@@ -15,14 +34,21 @@ interface PlaylistCardProps {
 
 const PREVIEW_COUNT = 5;
 
+const REVEAL = {
+  initial: { opacity: 0, height: 0 },
+  animate: { opacity: 1, height: "auto" },
+  exit: { opacity: 0, height: 0 },
+};
+const REVEAL_TRANSITION = SECTION_TRANSITION;
+
 export function PlaylistCard({ playlist, disabled, onToggle }: PlaylistCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   const handleToggle = useCallback(() => onToggle(playlist.slug), [onToggle, playlist.slug]);
   const handleExpand = useCallback(() => setExpanded((current) => !current), []);
 
-  const visible = expanded ? playlist.tracks : playlist.tracks.slice(0, PREVIEW_COUNT);
-  const hidden = playlist.tracks.length - visible.length;
+  const preview = playlist.tracks.slice(0, PREVIEW_COUNT);
+  const rest = playlist.tracks.slice(PREVIEW_COUNT);
 
   return (
     <Card className={cn("flex flex-col gap-3", disabled && "opacity-50")}>
@@ -57,42 +83,34 @@ export function PlaylistCard({ playlist, disabled, onToggle }: PlaylistCardProps
       )}
 
       <ul className="flex flex-col">
-        {visible.map((track) => (
-          <li
-            key={track.id}
-            className="flex items-center justify-between gap-3 rounded-sm px-1 py-1.5 hover:bg-surface-hover"
-          >
-            <span className="min-w-0 truncate text-xs">
-              <span className="text-foreground">{track.name}</span>
-              <span className="text-muted"> — {track.artistNames.join(", ")}</span>
-              {track.tempo !== undefined && (
-                <span className="text-disabled"> · {Math.round(track.tempo)} BPM</span>
-              )}
-            </span>
-            <OpenInSpotify
-              url={track.spotifyUrl}
-              label={`${track.name} — ${track.artistNames.join(", ")}`}
-            />
-          </li>
+        {preview.map((track) => (
+          <TrackLine key={track.id} track={track} />
         ))}
       </ul>
 
-      {hidden > 0 && (
+      <AnimatePresence initial={false}>
+        {expanded && rest.length > 0 && (
+          <motion.ul
+            initial={REVEAL.initial}
+            animate={REVEAL.animate}
+            exit={REVEAL.exit}
+            transition={REVEAL_TRANSITION}
+            className="flex flex-col overflow-hidden"
+          >
+            {rest.map((track) => (
+              <TrackLine key={track.id} track={track} />
+            ))}
+          </motion.ul>
+        )}
+      </AnimatePresence>
+
+      {rest.length > 0 && (
         <button
           type="button"
           onClick={handleExpand}
-          className="self-start text-2xs text-muted transition-colors hover:text-foreground"
+          className="self-start text-2xs text-muted transition-colors duration-180 ease-smooth hover:text-foreground"
         >
-          Pokaż pozostałe {hidden}
-        </button>
-      )}
-      {expanded && playlist.tracks.length > PREVIEW_COUNT && (
-        <button
-          type="button"
-          onClick={handleExpand}
-          className="self-start text-2xs text-muted transition-colors hover:text-foreground"
-        >
-          Zwiń
+          {expanded ? "Zwiń" : `Pokaż pozostałe ${rest.length}`}
         </button>
       )}
     </Card>
