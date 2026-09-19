@@ -190,12 +190,14 @@ export function AskAi({ enabled }: AskAiProps) {
                 {error ?? answer}
                 {busy && (
                   /*
-                   * A drawn block, not the ▍ glyph: that character sits on the
-                   * baseline differently in every font and rendered offset.
+                   * A drawn block, not the ▍ glyph, whose baseline placement
+                   * varies by font. align-text-bottom pins its foot to the
+                   * bottom of the text box, which is where a caret belongs —
+                   * translating it by hand only looked right at one font size.
                    */
                   <span
                     aria-hidden="true"
-                    className="ml-1 inline-block h-[1em] w-[2px] translate-y-[0.15em] animate-pulse rounded-[1px] bg-accent align-baseline"
+                    className="ml-1 inline-block h-[1.1em] w-[2px] animate-pulse rounded-[1px] bg-accent align-text-bottom"
                   />
                 )}
               </p>

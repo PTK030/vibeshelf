@@ -3,6 +3,7 @@ import { z } from "zod";
 import { type AskAnswer, AskAnswerSchema, type ResolvedReference } from "@/lib/ai/ask-schema";
 import { resolveModel } from "@/lib/ai/client";
 import { ASK_SYSTEM, buildLibraryContext } from "@/lib/ai/library-context";
+import { stripIds } from "@/app/api/ask/strip-ids";
 import { requireSessionForApi } from "@/lib/auth/api-session";
 import { SpotifyClient } from "@/lib/spotify/client";
 
@@ -64,7 +65,7 @@ export async function POST(request: Request) {
           const answer = partial.answer ?? "";
           if (answer !== lastAnswer) {
             lastAnswer = answer;
-            send({ type: "answer", answer });
+            send({ type: "answer", answer: stripIds(answer) });
           }
         }
 
@@ -97,7 +98,12 @@ export async function POST(request: Request) {
         const action =
           final.action === undefined ? undefined : validateAction(final.action, context.playlists);
 
-        send({ type: "done", answer: final.answer ?? lastAnswer, references, action });
+        send({
+          type: "done",
+          answer: stripIds(final.answer ?? lastAnswer),
+          references,
+          action,
+        });
       } catch (error) {
         send({
           type: "error",
