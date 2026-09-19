@@ -40,8 +40,8 @@ export default async function SettingsPage() {
             Zalogowano jako {session.displayName ?? "użytkownik Spotify"}.
           </p>
 
-          <Card className="flex flex-col gap-4">
-            <p className="text-xs text-muted">
+          <Card className="flex flex-wrap items-center justify-between gap-4">
+            <p className="min-w-0 flex-1 text-xs text-muted">
               Spotify wygasza zgodę sześć miesięcy po jej udzieleniu i nie przedłuża jej przez
               korzystanie z aplikacji.{" "}
               {daysLeft === 0
@@ -49,10 +49,10 @@ export default async function SettingsPage() {
                 : `Zostało ${daysLeft} dni.`}
             </p>
 
-            <form action="/api/auth/logout" method="post">
+            <form action="/api/auth/logout" method="post" className="shrink-0">
               <button
                 type="submit"
-                className="rounded-pill border border-border-strong px-5 py-2 text-2xs text-muted transition-colors duration-350 ease-smooth hover:border-danger hover:text-danger"
+                className="label-caps rounded-pill border border-border-strong px-5 py-2 text-2xs text-muted transition-colors duration-350 ease-smooth hover:border-danger hover:text-danger"
               >
                 Wyloguj
               </button>

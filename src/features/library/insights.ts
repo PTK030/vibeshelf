@@ -3,7 +3,6 @@ import { genreFamily } from "@/lib/ai/genre-families";
 export interface TasteInput {
   likedTotal: number;
   playlistTotal: number;
-  topArtistNames: string[];
   topArtistGenres: string[][];
 }
 
@@ -58,14 +57,6 @@ export function buildInsights(input: TasteInput): Insight[] {
       title: "Polubione rosną szybciej niż playlisty",
       body: `${input.likedTotal.toLocaleString("pl-PL")} utworów i tylko ${input.playlistTotal} playlist. Sporo z tego pewnie nigdy nie wraca.`,
       tone: "warning",
-    });
-  }
-
-  if (input.topArtistNames.length > 0) {
-    insights.push({
-      title: "Ostatnio najczęściej",
-      body: input.topArtistNames.slice(0, 4).join(", ") + ".",
-      tone: "neutral",
     });
   }
 

@@ -52,7 +52,7 @@ export class AiCallError extends Error {
   }
 }
 
-function resolveModel(provider: ProviderId, apiKey: string, model: string): LanguageModel {
+export function resolveModel(provider: ProviderId, apiKey: string, model: string): LanguageModel {
   if (provider === "anthropic") {
     return createAnthropic({ apiKey })(model);
   }

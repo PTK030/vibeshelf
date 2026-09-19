@@ -91,6 +91,41 @@
     outline-offset: 2px;
   }
 
+  /*
+   * Scrollbars. Firefox takes the two standard properties; Chromium and Safari
+   * still need the -webkit pseudo-elements, so both are set. The transparent
+   * border is what insets the thumb — a thumb that touches the track edges
+   * looks like a chunk of chrome rather than part of the page.
+   */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-border-strong);
+    border: 3px solid transparent;
+    border-radius: var(--radius-pill);
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-muted);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
   ::selection {
     background-color: var(--color-accent);
     color: var(--color-on-accent);

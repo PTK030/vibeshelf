@@ -106,3 +106,29 @@ export const TopArtistsSchema = z.object({
 export const TopTracksSchema = z.object({
   items: z.array(TrackSchema),
 });
+
+export const RecentlyPlayedSchema = z.object({
+  items: z.array(
+    z.object({
+      played_at: z.string(),
+      track: TrackSchema.nullable(),
+      /* Absent when the track was played outside any collection. */
+      context: z
+        .object({
+          type: z.string(),
+          uri: z.string(),
+          external_urls: z.object({ spotify: z.string() }).optional(),
+        })
+        .nullable()
+        .optional(),
+    }),
+  ),
+});
+
+export const PlaylistSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  images: z.array(ImageSchema).nullable().optional(),
+  owner: z.object({ display_name: z.string().nullable().optional() }).optional(),
+  external_urls: z.object({ spotify: z.string() }).optional(),
+});

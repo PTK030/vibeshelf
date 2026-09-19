@@ -10,6 +10,8 @@ import {
   CreatedPlaylistSchema,
   CurrentUserSchema,
   PlaylistPageSchema,
+  PlaylistSchema,
+  RecentlyPlayedSchema,
   SavedTracksPageSchema,
   TopArtistsSchema,
   TopTracksSchema,
@@ -130,6 +132,19 @@ export class SpotifyClient {
       `/me/top/tracks?limit=${limit}&time_range=${timeRange}`,
       TopTracksSchema,
     );
+  }
+
+  /*
+   * Play history, max 50. Each entry carries the context it was played from,
+   * which is the only way to learn which playlists actually get used —
+   * /me/top covers artists and tracks only. Needs user-read-recently-played.
+   */
+  async recentlyPlayed(limit = 50) {
+    return await this.request(`/me/player/recently-played?limit=${limit}`, RecentlyPlayedSchema);
+  }
+
+  async playlist(playlistId: string) {
+    return await this.request(`/playlists/${playlistId}`, PlaylistSchema);
   }
 
   /* One request per artist — the batch endpoint was removed in February 2026. */

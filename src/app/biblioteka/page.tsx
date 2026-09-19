@@ -7,7 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { OpenInSpotify } from "@/components/spotify/open-in-spotify";
 import { buildInsights, type Insight } from "@/features/library/insights";
+import type { PlayedPlaylist } from "@/features/library/recent-playlists";
+import { AskAi } from "@/features/library/ask-ai";
 import { QuickActions } from "@/features/library/quick-actions";
+import { recentlyPlayedPlaylists } from "@/features/library/recent-playlists";
 import { providerMeta } from "@/lib/ai/providers";
 import { requireSession } from "@/lib/auth/require-session";
 import { SpotifyClient } from "@/lib/spotify/client";
@@ -25,17 +28,21 @@ export default async function LibraryPage() {
    * has real content without the hundreds of per-artist lookups a full scan
    * would cost.
    */
-  const [liked, playlists, topArtists, topTracks] = await Promise.all([
+  const [liked, playlists, topArtists, topTracks, playedPlaylists] = await Promise.all([
     client.savedTracksPage(0, 5),
     client.playlistsPage(0, 1),
     client.topArtists(8).catch(() => ({ items: [] })),
     client.topTracks(5).catch(() => ({ items: [] })),
+    /*
+     * Returns nothing for sessions authorised before user-read-recently-played
+     * was added — an empty section is the right answer, not an error.
+     */
+    recentlyPlayedPlaylists(client).catch(() => []),
   ]);
 
   const insights = buildInsights({
     likedTotal: liked.total,
     playlistTotal: playlists.total,
-    topArtistNames: topArtists.items.map((artist) => artist.name),
     topArtistGenres: topArtists.items.map((artist) => artist.genres ?? []),
   });
 
@@ -79,6 +86,10 @@ export default async function LibraryPage() {
         )}
 
         <section className="mt-10">
+          <AskAi enabled={connected !== undefined} />
+        </section>
+
+        <section className="mt-10">
           <h2 className="mb-4 text-sm font-semibold text-muted">Od czego zacząć</h2>
           <QuickActions />
         </section>
@@ -106,6 +117,10 @@ export default async function LibraryPage() {
                     key={artist.id}
                     name={artist.name}
                     imageUrl={artist.images?.[0]?.url}
+                    url={
+                      artist.external_urls?.spotify ??
+                      `https://open.spotify.com/artist/${artist.id}`
+                    }
                   />
                 ))}
               </Card>
@@ -124,14 +139,41 @@ export default async function LibraryPage() {
           )}
         </div>
 
+        {playedPlaylists.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mb-1 text-sm font-semibold text-muted">
+              Najczęściej słuchane playlisty
+            </h2>
+            <p className="mb-4 text-2xs text-disabled">
+              Z ostatnich 50 odtworzeń — Spotify nie udostępnia dłuższej historii.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {playedPlaylists.map((playlist) => (
+                <PlayedPlaylistCard key={playlist.id} playlist={playlist} />
+              ))}
+            </div>
+          </section>
+        )}
+
         {topTracks.items.length > 0 && (
           <section className="mt-10">
             <h2 className="mb-4 text-sm font-semibold text-muted">Najczęściej słuchane</h2>
             <div className="flex flex-wrap gap-2">
               {topTracks.items.map((track) => (
-                <Badge key={track.id ?? track.name}>
-                  {track.name} · {track.artists[0]?.name ?? "?"}
-                </Badge>
+                <a
+                  key={track.id ?? track.name}
+                  href={
+                    track.external_urls?.spotify ??
+                    `https://open.spotify.com/track/${track.id ?? ""}`
+                  }
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="rounded-badge transition-opacity duration-350 ease-smooth hover:opacity-80"
+                >
+                  <Badge>
+                    {track.name} · {track.artists[0]?.name ?? "?"}
+                  </Badge>
+                </a>
               ))}
             </div>
           </section>
@@ -171,9 +213,21 @@ function RecentRow({ track }: { track: RecentTrack }) {
   );
 }
 
-function ArtistChip({ name, imageUrl }: { name: string; imageUrl: string | undefined }) {
+interface ArtistChipProps {
+  name: string;
+  imageUrl: string | undefined;
+  url: string;
+}
+
+function ArtistChip({ name, imageUrl, url }: ArtistChipProps) {
   return (
-    <span className="flex items-center gap-2 rounded-pill bg-elevated py-1 pr-3 pl-1">
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer noopener"
+      aria-label={`Otwórz ${name} w Spotify`}
+      className="flex items-center gap-2 rounded-pill bg-elevated py-1 pr-3 pl-1 transition-colors duration-350 ease-smooth hover:bg-surface-hover"
+    >
       {imageUrl === undefined ? (
         <span className="size-6 rounded-full bg-surface-hover" />
       ) : (
@@ -186,7 +240,7 @@ function ArtistChip({ name, imageUrl }: { name: string; imageUrl: string | undef
         />
       )}
       <span className="text-xs text-foreground">{name}</span>
-    </span>
+    </a>
   );
 }
 
@@ -195,6 +249,23 @@ const INSIGHT_BORDER: Record<Insight["tone"], string> = {
   warning: "border-warning/30",
   neutral: "border-border",
 };
+
+function PlayedPlaylistCard({ playlist }: { playlist: PlayedPlaylist }) {
+  return (
+    <Card className="flex items-center justify-between gap-3">
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-semibold text-foreground">
+          {playlist.name}
+        </span>
+        <span className="mt-0.5 block text-2xs text-muted">
+          {playlist.plays} {playlist.plays === 1 ? "odtworzenie" : "odtworzeń"}
+          {playlist.owner === undefined ? "" : ` · ${playlist.owner}`}
+        </span>
+      </span>
+      <OpenInSpotify url={playlist.spotifyUrl} label={playlist.name} />
+    </Card>
+  );
+}
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildInsights } from "@/features/library/insights";
 
-const base = { likedTotal: 100, playlistTotal: 10, topArtistNames: [], topArtistGenres: [] };
+const base = { likedTotal: 100, playlistTotal: 10, topArtistGenres: [] };
 
 describe("buildInsights", () => {
   it("calls out a concentrated taste", () => {

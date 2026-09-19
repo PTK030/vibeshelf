@@ -18,6 +18,8 @@ export const SPOTIFY_SCOPES = [
   "playlist-modify-public",
   "user-top-read",
   "user-follow-read",
+  /* Recently played is the only route to "which playlists do you actually use". */
+  "user-read-recently-played",
 ] as const;
 
 function base64url(input: Buffer): string {
