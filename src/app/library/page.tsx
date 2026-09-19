@@ -39,7 +39,11 @@ export default async function LibraryPage() {
      * Returns nothing for sessions authorised before user-read-recently-played
      * was added — an empty section is the right answer, not an error.
      */
-    recentlyPlayedPlaylists(client).catch(() => ({ status: "empty" }) as const),
+    recentlyPlayedPlaylists(client).catch((): PlayedPlaylistsResult => ({
+      status: "empty",
+      sampled: 0,
+      breakdown: [],
+    })),
   ]);
 
   const insights = buildInsights({
@@ -246,6 +250,16 @@ const INSIGHT_BORDER: Record<Insight["tone"], string> = {
   neutral: "border-border",
 };
 
+/* Spotify context types, as they read to a person. */
+const CONTEXT_LABELS: Record<string, string> = {
+  album: "an album",
+  artist: "an artist page or radio",
+  collection: "Liked Songs",
+  playlist: "a playlist",
+  show: "a podcast",
+  none: "nothing reported (autoplay, search or queue)",
+};
+
 function PlayedPlaylists({ result }: { result: PlayedPlaylistsResult }) {
   if (result.status === "needs-reauth") {
     return (
@@ -263,10 +277,21 @@ function PlayedPlaylists({ result }: { result: PlayedPlaylistsResult }) {
 
   if (result.status === "empty") {
     return (
-      <Card className="border border-border">
+      <Card className="flex flex-col gap-2 border border-border">
         <p className="text-xs text-muted">
-          Nothing yet. Spotify only keeps the last 50 plays, and none of them came from a playlist.
+          None of your recent plays started from a playlist. Spotify reports where each play began,
+          and only playlist starts can be counted here.
         </p>
+
+        {result.sampled > 0 && (
+          <p className="text-2xs text-disabled">
+            Last {result.sampled} plays started from:{" "}
+            {result.breakdown
+              .map(([type, count]) => `${CONTEXT_LABELS[type] ?? type} (${count})`)
+              .join(", ")}
+            .
+          </p>
+        )}
       </Card>
     );
   }

@@ -11,7 +11,11 @@ export interface PlayedPlaylist {
   plays: number;
 }
 
-const PLAYLIST_URI = /^spotify:playlist:([A-Za-z0-9]+)$/;
+/*
+ * Both forms appear in the wild: the current one, and the legacy
+ * spotify:user:<id>:playlist:<id> still emitted for some older playlists.
+ */
+const PLAYLIST_URI = /^spotify:(?:user:[^:]+:)?playlist:([A-Za-z0-9]+)$/;
 
 function playlistUrl(id: string): string {
   return `https://open.spotify.com/playlist/${id}`;
@@ -22,6 +26,18 @@ type OwnedPlaylists = Map<
   string,
   { name: string; url: string; imageUrl: string | undefined; trackCount: number | undefined }
 >;
+
+/* What the last 50 plays actually came from, most common first. */
+function contextBreakdown(history: History): Array<[string, number]> {
+  const counts = new Map<string, number>();
+
+  for (const item of history.items) {
+    const type = item.context?.type ?? "none";
+    counts.set(type, (counts.get(type) ?? 0) + 1);
+  }
+
+  return [...counts.entries()].toSorted((a, b) => b[1] - a[1]);
+}
 
 function countPlaylistPlays(history: History): Map<string, number> {
   const plays = new Map<string, number>();
@@ -109,7 +125,14 @@ async function resolvePlaylist(
  */
 export type PlayedPlaylistsResult =
   | { status: "ok"; playlists: PlayedPlaylist[] }
-  | { status: "empty" }
+  /*
+   * "Empty" is rarely the whole story: Spotify reports the context a track was
+   * played from, and most plays are not from playlists — albums, artist radio,
+   * autoplay and search all show up differently, and some carry no context at
+   * all. Reporting the breakdown answers "why is this empty" on the page
+   * instead of leaving the user to guess.
+   */
+  | { status: "empty"; sampled: number; breakdown: Array<[string, number]> }
   | { status: "needs-reauth" };
 
 /*
@@ -133,13 +156,15 @@ export async function recentlyPlayedPlaylists(
     if (error instanceof SpotifyRequestError && error.status === 403) {
       return { status: "needs-reauth" };
     }
-    return { status: "empty" };
+    return { status: "empty", sampled: 0, breakdown: [] };
   }
 
   const plays = countPlaylistPlays(history);
 
   const ranked = [...plays.entries()].toSorted((a, b) => b[1] - a[1]).slice(0, limit);
-  if (ranked.length === 0) return { status: "empty" };
+  if (ranked.length === 0) {
+    return { status: "empty", sampled: history.items.length, breakdown: contextBreakdown(history) };
+  }
 
   const owned = await loadOwnedPlaylists(client);
 
@@ -151,5 +176,9 @@ export async function recentlyPlayedPlaylists(
     (playlist): playlist is PlayedPlaylist => playlist !== undefined,
   );
 
-  return playlists.length === 0 ? { status: "empty" } : { status: "ok", playlists };
+  if (playlists.length === 0) {
+    return { status: "empty", sampled: history.items.length, breakdown: contextBreakdown(history) };
+  }
+
+  return { status: "ok", playlists };
 }
