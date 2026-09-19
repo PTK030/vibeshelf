@@ -1,14 +1,12 @@
-import { NextResponse } from "next/server";
+import { redirectToPath } from "@/lib/auth/redirect";
 import { consumePkce, writeSession } from "@/lib/auth/session";
 import { SpotifyClient } from "@/lib/spotify/client";
 import { SPOTIFY_SCOPES, exchangeCodeForTokens } from "@/lib/spotify/oauth";
 
 export const dynamic = "force-dynamic";
 
-function failure(request: Request, reason: string): NextResponse {
-  const url = new URL("/", request.url);
-  url.searchParams.set("blad", reason);
-  return NextResponse.redirect(url);
+function failure(reason: string) {
+  return redirectToPath(`/?blad=${encodeURIComponent(reason)}`);
 }
 
 export async function GET(request: Request) {
@@ -17,17 +15,17 @@ export async function GET(request: Request) {
   const state = url.searchParams.get("state");
   const denied = url.searchParams.get("error");
 
-  if (denied !== null) return failure(request, "odmowa");
-  if (code === null || state === null) return failure(request, "brak-kodu");
+  if (denied !== null) return failure("odmowa");
+  if (code === null || state === null) return failure("brak-kodu");
 
   const pkce = await consumePkce();
-  if (pkce === undefined) return failure(request, "wygasla-proba");
+  if (pkce === undefined) return failure("wygasla-proba");
   /* Mismatched state means the callback did not originate from our redirect. */
-  if (pkce.state !== state) return failure(request, "zly-state");
+  if (pkce.state !== state) return failure("zly-state");
 
   try {
     const tokens = await exchangeCodeForTokens(code, pkce.verifier);
-    if (tokens.refresh_token === undefined) return failure(request, "brak-refresh-tokenu");
+    if (tokens.refresh_token === undefined) return failure("brak-refresh-tokenu");
 
     const profile = await new SpotifyClient(tokens.access_token).currentUser();
     const now = Date.now();
@@ -44,8 +42,8 @@ export async function GET(request: Request) {
       scopes: tokens.scope?.split(" ") ?? [...SPOTIFY_SCOPES],
     });
 
-    return NextResponse.redirect(new URL("/start", request.url));
+    return redirectToPath("/start");
   } catch {
-    return failure(request, "wymiana-nieudana");
+    return failure("wymiana-nieudana");
   }
 }

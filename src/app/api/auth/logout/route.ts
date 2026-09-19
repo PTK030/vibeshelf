@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { redirectToPath } from "@/lib/auth/redirect";
 import { clearSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: Request) {
+export async function POST() {
   await clearSession();
-  return NextResponse.redirect(new URL("/", request.url), { status: 303 });
+  return redirectToPath("/", 303);
 }
