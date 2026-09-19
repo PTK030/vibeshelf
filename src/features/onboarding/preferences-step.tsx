@@ -27,7 +27,7 @@ export function PreferencesStep({ preferences, onChange, onBack }: PreferencesSt
 
   return (
     <div>
-      <h1 className="text-xl font-black">Jak ma pracować AI?</h1>
+      <h1 className="text-xl font-bold">Jak ma pracować AI?</h1>
       <p className="mt-3 text-sm text-muted">Każde z tych ustawień zmienisz później.</p>
 
       <div className="mt-8 flex flex-col gap-3">

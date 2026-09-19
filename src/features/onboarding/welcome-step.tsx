@@ -33,7 +33,7 @@ interface WelcomeStepProps {
 export function WelcomeStep({ displayName, onNext }: WelcomeStepProps) {
   return (
     <div>
-      <h1 className="text-xl font-black">Cześć, {displayName}</h1>
+      <h1 className="text-xl font-bold">Cześć, {displayName}</h1>
       <p className="mt-3 text-sm text-muted">Trzy kroki i zaczynamy. Zajmie to mniej niż minutę.</p>
 
       <ul className="mt-8 flex flex-col gap-3">

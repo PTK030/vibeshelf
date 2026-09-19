@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AppHeader } from "@/components/layout/app-header";
 import { AttributionFooter } from "@/components/layout/attribution-footer";
 import { Card } from "@/components/ui/card";
 import { OrganizePanel, type ModelChoice } from "@/features/organize/organize-panel";
@@ -51,12 +52,13 @@ export default async function OrganizePage() {
 
   return (
     <>
+      <AppHeader displayName={session.displayName ?? undefined} showSignOut />
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
         <Link href="/biblioteka" className="text-xs text-muted hover:text-foreground">
           ← Biblioteka
         </Link>
 
-        <h1 className="mt-4 text-xl font-black">Zaproponuj playlisty</h1>
+        <h1 className="mt-4 text-xl font-bold">Zaproponuj playlisty</h1>
         <p className="mt-3 text-sm text-muted">
           Przeanalizuję {Math.min(liked.total, 1500).toLocaleString("pl-PL")} z{" "}
           {liked.total.toLocaleString("pl-PL")} polubionych utworów. Nic nie zostanie zapisane,

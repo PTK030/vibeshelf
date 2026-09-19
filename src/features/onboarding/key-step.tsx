@@ -36,7 +36,7 @@ export function KeyStep({ hasKey, onNext, onBack }: KeyStepProps) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h1 className="text-xl font-black">Podłącz OpenRouter</h1>
+      <h1 className="text-xl font-bold">Podłącz OpenRouter</h1>
       <p className="mt-3 text-sm text-muted">
         Model wybierasz Ty i Ty płacisz za jego użycie. Klucz trzymamy zaszyfrowany w Twojej sesji —
         nie trafia do przeglądarki ani do nikogo innego.

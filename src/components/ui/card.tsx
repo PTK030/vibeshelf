@@ -12,7 +12,11 @@ export function Card({ interactive = false, className, children, ...rest }: Card
     <div
       className={cn(
         "rounded-md bg-surface p-4",
-        interactive && "transition-colors duration-200 hover:bg-surface-hover",
+        interactive &&
+          [
+            "transition-[background-color,transform,box-shadow] duration-200 ease-out",
+            "hover:-translate-y-0.5 hover:bg-surface-hover hover:shadow-raised",
+          ].join(" "),
         className,
       )}
       {...rest}

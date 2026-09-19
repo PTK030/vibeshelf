@@ -25,7 +25,8 @@ export function OpenInSpotify({ url, label, className }: OpenInSpotifyProps) {
       aria-label={`Otwórz w Spotify: ${label}`}
       className={cn(
         "inline-flex items-center gap-2 rounded-pill text-2xs text-muted",
-        "label-caps transition-colors duration-150 hover:text-foreground",
+        "label-caps transition-colors duration-150",
+        "hover:text-accent",
         className,
       )}
     >

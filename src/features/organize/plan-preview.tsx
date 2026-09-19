@@ -62,7 +62,7 @@ export function PlanPreview({ plan }: PlanPreviewProps) {
     <section className="flex flex-col gap-4">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-lg font-black">Propozycja</h2>
+          <h2 className="text-lg font-bold">Propozycja</h2>
           <p className="mt-1 text-xs text-muted">
             {enabled.length} playlist · {totalTracks} utworów
             {plan.unassigned > 0 ? ` · ${plan.unassigned} nieprzypisanych` : ""}

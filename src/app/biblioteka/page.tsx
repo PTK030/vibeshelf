@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AppHeader } from "@/components/layout/app-header";
 import { AttributionFooter } from "@/components/layout/attribution-footer";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -20,8 +21,9 @@ export default async function LibraryPage() {
 
   return (
     <>
+      <AppHeader displayName={session.displayName ?? undefined} showSignOut />
       <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-16">
-        <h1 className="text-xl font-black">Twoja biblioteka</h1>
+        <h1 className="text-xl font-bold">Twoja biblioteka</h1>
         <p className="mt-3 text-sm text-muted">
           Tyle mamy do przerobienia. Analiza nic nie zmienia na Twoim koncie.
         </p>
@@ -51,7 +53,7 @@ function StatCard({ label, value }: StatCardProps) {
   return (
     <Card>
       <p className="text-xs text-muted">{label}</p>
-      <p className="mt-2 text-2xl font-black tabular-nums">{value.toLocaleString("pl-PL")}</p>
+      <p className="mt-2 text-2xl font-bold tabular-nums">{value.toLocaleString("pl-PL")}</p>
     </Card>
   );
 }

@@ -16,7 +16,7 @@ export function AttributionFooter() {
           <span className="font-semibold text-foreground">Spotify</span>
         </p>
         <p>
-          {BRAND.name} {BRAND.qualifier}. {BRAND.disclaimer}
+          {BRAND.name}. {BRAND.disclaimer}
         </p>
       </div>
     </footer>

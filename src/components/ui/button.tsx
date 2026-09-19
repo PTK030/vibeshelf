@@ -6,12 +6,22 @@ export type ButtonVariant = "accent" | "secondary" | "ghost" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  accent:
-    "bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-press hover:scale-104 active:scale-100",
-  secondary:
-    "border border-border-strong text-foreground hover:border-foreground hover:scale-104 active:scale-100",
-  ghost: "text-muted hover:text-foreground hover:bg-surface-hover",
-  danger: "bg-danger text-background hover:brightness-110 hover:scale-104 active:scale-100",
+  accent: [
+    "bg-accent text-on-accent",
+    /* Lift plus a soft pool of the accent colour underneath. */
+    "hover:bg-accent-hover hover:-translate-y-0.5 hover:shadow-accent",
+    "active:translate-y-0 active:bg-accent-press active:shadow-none",
+  ].join(" "),
+  secondary: [
+    "border border-border-strong text-muted",
+    "hover:border-foreground hover:bg-surface-hover hover:text-foreground",
+    "hover:-translate-y-0.5 active:translate-y-0",
+  ].join(" "),
+  ghost: "text-muted hover:bg-surface-hover hover:text-foreground",
+  danger: [
+    "bg-danger text-background",
+    "hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0",
+  ].join(" "),
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
@@ -46,7 +56,8 @@ export function Button({
 
 const BASE_CLASSES = [
   "label-caps inline-flex shrink-0 items-center justify-center gap-2 rounded-pill",
-  "transition-[transform,background-color,border-color,filter] duration-200 ease-out",
+  "transition-[transform,background-color,border-color,box-shadow,color,filter]",
+  "duration-200 ease-out will-change-transform",
   "disabled:pointer-events-none disabled:opacity-50",
 ].join(" ");
 
