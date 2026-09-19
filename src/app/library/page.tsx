@@ -9,7 +9,7 @@ import { Stagger, StaggerItem } from "@/components/ui/stagger";
 import { OpenInSpotify } from "@/components/spotify/open-in-spotify";
 import { SpotifyMark } from "@/components/spotify/spotify-mark";
 import { buildInsights, type Insight } from "@/features/library/insights";
-import type { PlayedPlaylist } from "@/features/library/recent-playlists";
+import type { PlayedPlaylist, PlayedPlaylistsResult } from "@/features/library/recent-playlists";
 import { AskAi } from "@/features/library/ask-ai";
 import { QuickActions } from "@/features/library/quick-actions";
 import { recentlyPlayedPlaylists } from "@/features/library/recent-playlists";
@@ -39,7 +39,7 @@ export default async function LibraryPage() {
      * Returns nothing for sessions authorised before user-read-recently-played
      * was added — an empty section is the right answer, not an error.
      */
-    recentlyPlayedPlaylists(client).catch(() => []),
+    recentlyPlayedPlaylists(client).catch(() => ({ status: "empty" }) as const),
   ]);
 
   const insights = buildInsights({
@@ -142,19 +142,13 @@ export default async function LibraryPage() {
             )}
           </StaggerItem>
 
-          {playedPlaylists.length > 0 && (
-            <StaggerItem className="mt-10">
-              <h2 className="mb-1 text-sm font-semibold text-muted">Most played playlists</h2>
-              <p className="mb-4 text-2xs text-disabled">
-                From the last 50 plays — Spotify exposes no longer history.
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {playedPlaylists.map((playlist) => (
-                  <PlayedPlaylistCard key={playlist.id} playlist={playlist} />
-                ))}
-              </div>
-            </StaggerItem>
-          )}
+          <StaggerItem className="mt-10">
+            <h2 className="mb-1 text-sm font-semibold text-muted">Most played playlists</h2>
+            <p className="mb-4 text-2xs text-disabled">
+              From the last 50 plays — Spotify exposes no longer history.
+            </p>
+            <PlayedPlaylists result={playedPlaylists} />
+          </StaggerItem>
 
           {topTracks.items.length > 0 && (
             <StaggerItem className="mt-10">
@@ -251,6 +245,40 @@ const INSIGHT_BORDER: Record<Insight["tone"], string> = {
   warning: "border-warning/30",
   neutral: "border-border",
 };
+
+function PlayedPlaylists({ result }: { result: PlayedPlaylistsResult }) {
+  if (result.status === "needs-reauth") {
+    return (
+      <Card className="border border-border">
+        <p className="text-xs text-muted">
+          Reading your play history needs one extra permission that was added after you signed in.{" "}
+          <Link href="/settings" className="text-accent hover:underline">
+            Sign out and back in
+          </Link>{" "}
+          to grant it — Spotify will ask once.
+        </p>
+      </Card>
+    );
+  }
+
+  if (result.status === "empty") {
+    return (
+      <Card className="border border-border">
+        <p className="text-xs text-muted">
+          Nothing yet. Spotify only keeps the last 50 plays, and none of them came from a playlist.
+        </p>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {result.playlists.map((playlist) => (
+        <PlayedPlaylistCard key={playlist.id} playlist={playlist} />
+      ))}
+    </div>
+  );
+}
 
 function PlayedPlaylistCard({ playlist }: { playlist: PlayedPlaylist }) {
   const details = [

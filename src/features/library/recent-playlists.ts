@@ -1,4 +1,4 @@
-import type { SpotifyClient } from "@/lib/spotify/client";
+import { SpotifyClient, SpotifyRequestError } from "@/lib/spotify/client";
 
 export interface PlayedPlaylist {
   id: string;
@@ -102,6 +102,17 @@ async function resolvePlaylist(
 }
 
 /*
+ * Three outcomes, not two. Silently hiding the section when the scope is
+ * missing leaves the user staring at an absence with no explanation — which is
+ * exactly what happened after the scope was introduced, since sessions issued
+ * before it keep working for everything else.
+ */
+export type PlayedPlaylistsResult =
+  | { status: "ok"; playlists: PlayedPlaylist[] }
+  | { status: "empty" }
+  | { status: "needs-reauth" };
+
+/*
  * Spotify publishes no "most played playlists" statistic — /me/top covers
  * artists and tracks only. The closest honest answer is the play history: each
  * entry carries the context it was played from, so counting playlist contexts
@@ -113,11 +124,22 @@ async function resolvePlaylist(
 export async function recentlyPlayedPlaylists(
   client: SpotifyClient,
   limit = 4,
-): Promise<PlayedPlaylist[]> {
-  const plays = countPlaylistPlays(await client.recentlyPlayed(50));
+): Promise<PlayedPlaylistsResult> {
+  let history: History;
+  try {
+    history = await client.recentlyPlayed(50);
+  } catch (error) {
+    /* 403 means the session predates the user-read-recently-played scope. */
+    if (error instanceof SpotifyRequestError && error.status === 403) {
+      return { status: "needs-reauth" };
+    }
+    return { status: "empty" };
+  }
+
+  const plays = countPlaylistPlays(history);
 
   const ranked = [...plays.entries()].toSorted((a, b) => b[1] - a[1]).slice(0, limit);
-  if (ranked.length === 0) return [];
+  if (ranked.length === 0) return { status: "empty" };
 
   const owned = await loadOwnedPlaylists(client);
 
@@ -125,5 +147,9 @@ export async function recentlyPlayedPlaylists(
     ranked.map(([id, count]) => resolvePlaylist(client, id, count, owned)),
   );
 
-  return resolved.filter((playlist): playlist is PlayedPlaylist => playlist !== undefined);
+  const playlists = resolved.filter(
+    (playlist): playlist is PlayedPlaylist => playlist !== undefined,
+  );
+
+  return playlists.length === 0 ? { status: "empty" } : { status: "ok", playlists };
 }
