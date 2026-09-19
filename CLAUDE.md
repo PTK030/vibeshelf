@@ -12,7 +12,7 @@ and edit step before anything is written back to Spotify.
 | `src/app/(app)`          | Authenticated shell: library, organize, plans, cleanup, settings        |
 | `src/app/api`            | OAuth callbacks, job tick/stream/sweep route handlers                   |
 | `src/components/ui`      | Design-system primitives (button, card, dialog, progress…)              |
-| `src/components/spotify` | Track row, playlist card, "Open in Spotify" — carry Policy requirements |
+| `src/components/spotify` | Spotify mark, sign-in and "Open in Spotify" — carry Policy requirements |
 | `src/features/*`         | Feature slices, one folder per user-facing capability                   |
 | `src/lib/spotify`        | Thin `fetch` client, adaptive rate limiter, Zod response schemas        |
 | `src/lib/openrouter`     | Model list, key validation, structured-output calls                     |
@@ -52,8 +52,8 @@ There is no database — see `docs/architecture.md`.
 - **NEVER let the model see or return Spotify IDs.** It works on local chunk indices, so a
   hallucinated ID is structurally impossible.
 - **NEVER write to Spotify without the user approving a plan first.** Analysis is read-only.
-- Every rendered track needs a link back to Spotify — this is a Policy requirement, not a
-  nicety. It lives in `components/spotify/track-row.tsx` so it cannot be forgotten.
+- Every rendered track needs a link back to Spotify — a Policy requirement, not a nicety.
+  Always render it with `components/spotify/open-in-spotify.tsx`.
 
 ## Conventions
 

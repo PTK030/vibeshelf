@@ -75,31 +75,3 @@ export function ButtonLink({
     </Link>
   );
 }
-
-interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  label: string;
-  children: ReactNode;
-}
-
-/*
- * The circular play affordance. 48px on mobile, 56px from sm up, mirroring the
- * proportions the pattern is recognised by.
- */
-export function PlayButton({ label, className, children, ...rest }: IconButtonProps) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      className={cn(
-        "inline-flex size-12 shrink-0 items-center justify-center rounded-full sm:size-14",
-        "bg-accent text-on-accent shadow-card",
-        "transition-transform duration-200 ease-out hover:scale-104 active:scale-100",
-        "disabled:pointer-events-none disabled:opacity-50",
-        className,
-      )}
-      {...rest}
-    >
-      {children}
-    </button>
-  );
-}

@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 import {
   RateLimitedError,
   SpotifyLimiter,
@@ -6,12 +6,16 @@ import {
   parseRetryAfter,
 } from "@/lib/spotify/limiter";
 import {
+  ArtistSchema,
+  CreatedPlaylistSchema,
   CurrentUserSchema,
   PlaylistPageSchema,
   SavedTracksPageSchema,
 } from "@/lib/spotify/schemas";
 
 const API_BASE = "https://api.spotify.com/v1";
+
+const SnapshotSchema = z.object({ snapshot_id: z.string().optional() });
 
 export class SpotifyTokenExpiredError extends Error {
   constructor() {
@@ -102,5 +106,34 @@ export class SpotifyClient {
 
   async playlistsPage(offset: number, limit = 50) {
     return await this.request(`/me/playlists?limit=${limit}&offset=${offset}`, PlaylistPageSchema);
+  }
+
+  /* One request per artist — the batch endpoint was removed in February 2026. */
+  async artist(artistId: string) {
+    return await this.request(`/artists/${artistId}`, ArtistSchema);
+  }
+
+  /* POST /me/playlists — the old /users/{id}/playlists route no longer exists. */
+  async createPlaylist(input: { name: string; description: string; isPublic: boolean }) {
+    return await this.request("/me/playlists", CreatedPlaylistSchema, {
+      method: "POST",
+      body: JSON.stringify({
+        name: input.name,
+        description: input.description,
+        public: input.isPublic,
+      }),
+    });
+  }
+
+  /*
+   * Max 100 URIs per call, sent in the body: a long list as a query parameter
+   * would exceed the URL length limit. Call this sequentially — parallel
+   * batches would scramble the track order.
+   */
+  async addPlaylistItems(playlistId: string, uris: readonly string[]) {
+    return await this.request(`/playlists/${playlistId}/items`, SnapshotSchema, {
+      method: "POST",
+      body: JSON.stringify({ uris }),
+    });
   }
 }
