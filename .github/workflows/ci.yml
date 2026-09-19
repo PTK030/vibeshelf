@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A new push supersedes the run in flight, except on main.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+      # Builds with placeholder secrets: env is validated lazily at request
+      # time, so the build never needs real credentials.
+      - run: npm run build
+        env:
+          SPOTIFY_CLIENT_ID: ci
+          SPOTIFY_CLIENT_SECRET: ci
+          SPOTIFY_REDIRECT_URI: http://127.0.0.1:3000/api/auth/spotify/callback
+          OPENROUTER_REDIRECT_URI: http://127.0.0.1:3000/api/auth/openrouter/callback
+          ENCRYPTION_KEY: MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==
+          SESSION_SECRET: ci-placeholder-secret
+          JOB_RUNNER_SECRET: ci-placeholder-secret
