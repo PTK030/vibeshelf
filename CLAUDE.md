@@ -35,9 +35,10 @@ and edit step before anything is written back to Spotify.
 ```bash
 npm install
 cp .env.example .env.local   # then fill it in
-npm run db:migrate
 npm run dev                  # http://127.0.0.1:3000
 ```
+
+There is no database — see `docs/architecture.md`.
 
 ## Critical rules
 
@@ -50,8 +51,7 @@ npm run dev                  # http://127.0.0.1:3000
   structured output. Routing can otherwise land on a provider that ignores `response_format`.
 - **NEVER let the model see or return Spotify IDs.** It works on local chunk indices, so a
   hallucinated ID is structurally impossible.
-- **NEVER write to Spotify outside a `commit` job.** Everything else produces a plan the user
-  reviews first.
+- **NEVER write to Spotify without the user approving a plan first.** Analysis is read-only.
 - Every rendered track needs a link back to Spotify — this is a Policy requirement, not a
   nicety. It lives in `components/spotify/track-row.tsx` so it cannot be forgotten.
 
@@ -59,3 +59,5 @@ npm run dev                  # http://127.0.0.1:3000
 
 kebab-case files · no barrel files · named exports · `interface` over `type` · types from
 `z.infer` · validate only at boundaries. Full list in `docs/coding-standards.md`.
+
+UI copy is Polish. Code, comments and docs are English.

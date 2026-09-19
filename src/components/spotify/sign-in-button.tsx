@@ -1,0 +1,29 @@
+import { SpotifyMark } from "@/components/spotify/spotify-mark";
+import { cn } from "@/lib/cn";
+
+interface SignInButtonProps {
+  className?: string;
+}
+
+/*
+ * Points at a route handler that 302s to accounts.spotify.com, so this has to
+ * be a real navigation. next/link would try to handle it client-side.
+ */
+export function SignInButton({ className }: SignInButtonProps) {
+  return (
+    // eslint-disable-next-line next/no-html-link-for-pages
+    <a
+      href="/api/auth/spotify"
+      className={cn(
+        "label-caps inline-flex h-12 items-center justify-center gap-3 rounded-pill px-8",
+        "bg-accent text-sm text-on-accent",
+        "transition-[transform,background-color] duration-200 ease-out",
+        "hover:scale-104 hover:bg-accent-hover active:scale-100 active:bg-accent-press",
+        className,
+      )}
+    >
+      <SpotifyMark className="size-5 fill-on-accent" />
+      Zaloguj przez Spotify
+    </a>
+  );
+}

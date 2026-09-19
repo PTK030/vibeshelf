@@ -58,5 +58,5 @@
       }
     ]
   },
-  "ignorePatterns": [".next", "node_modules", "src/lib/db/migrations", "next-env.d.ts"]
+  "ignorePatterns": [".next", "node_modules", "next-env.d.ts"]
 }

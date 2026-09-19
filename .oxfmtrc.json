@@ -10,5 +10,5 @@
   "arrowParens": "always",
   "bracketSameLine": false,
   "bracketSpacing": true,
-  "ignorePatterns": ["*.lock", "**/*.gen.ts", "**/*.gen.tsx", ".next", "src/lib/db/migrations"]
+  "ignorePatterns": ["*.lock", "**/*.gen.ts", "**/*.gen.tsx", ".next"]
 }

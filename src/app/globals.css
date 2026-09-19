@@ -12,26 +12,26 @@
   --color-surface-hover: #282828;
   --color-elevated: #242424;
   --color-border: #2a2a2a;
-  --color-border-strong: #404040;
+  /* 3.2:1 even on the hover surface — WCAG 1.4.11 needs 3:1 for controls. */
+  --color-border-strong: #757575;
 
   /* --- Text ------------------------------------------------------------ */
   --color-foreground: #ffffff;
   --color-muted: #b3b3b3;
-  --color-disabled: #6a6a6a;
+  /* 4.6:1 even on the hover surface; the original #6a6a6a was 3.5:1. */
+  --color-disabled: #909090;
 
-  /* --- Accent (ours, deliberately not Spotify green) ------------------- */
-  --color-accent: #14d6a0;
-  --color-accent-hover: #2fe8b4;
-  --color-accent-press: #0fb587;
-  --color-on-accent: #04170f;
+  /* --- Accent: Spotify green ------------------------------------------ */
+  --color-accent: #1ed760;
+  --color-accent-hover: #1fdf64;
+  --color-accent-press: #1db954;
+  /* Black on green is 10.9:1 — the same pairing Spotify uses. */
+  --color-on-accent: #000000;
 
   /* --- Semantic -------------------------------------------------------- */
   --color-danger: #f3727f;
   --color-warning: #ffa42b;
   --color-info: #539df5;
-
-  /* --- Spotify brand: ONLY for links and attribution back to Spotify --- */
-  --color-spotify: #1ed760;
 
   /* --- Radii ----------------------------------------------------------- */
   --radius-badge: 2px;
