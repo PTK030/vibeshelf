@@ -2,6 +2,8 @@
 
 import { type ProviderId, ProviderIdSchema, providerMeta } from "@/lib/ai/providers";
 import { validateProviderKey } from "@/lib/ai/validate-key";
+import { redirect } from "next/navigation";
+import { markOnboarded } from "@/lib/auth/onboarding";
 import { readSession, writeSession } from "@/lib/auth/session";
 
 export interface ConnectResult {
@@ -66,4 +68,16 @@ export async function disconnectProvider(): Promise<void> {
 
   const { ai: _removed, ...rest } = session;
   await writeSession(rest);
+}
+
+/*
+ * Records that this account has seen the intro, then continues into the app.
+ * A server action rather than a plain link because cookies can only be written
+ * from an action or a route handler, never while rendering a page.
+ */
+export async function finishOnboarding(): Promise<void> {
+  const session = await readSession();
+  if (session !== undefined) await markOnboarded(session.accountId);
+
+  redirect("/library");
 }

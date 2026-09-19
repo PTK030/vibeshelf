@@ -1,3 +1,4 @@
+import { hasOnboarded } from "@/lib/auth/onboarding";
 import { redirectToPath } from "@/lib/auth/redirect";
 import { consumePkce, writeSession } from "@/lib/auth/session";
 import { SpotifyClient } from "@/lib/spotify/client";
@@ -29,10 +30,11 @@ export async function GET(request: Request) {
 
     const profile = await new SpotifyClient(tokens.access_token).currentUser();
     const now = Date.now();
+    const accountId = profile.account_id ?? profile.id;
 
     await writeSession({
       /* Prefer the stable pseudonymous id; fall back while it rolls out. */
-      accountId: profile.account_id ?? profile.id,
+      accountId,
       displayName: profile.display_name ?? null,
       imageUrl: profile.images?.[0]?.url ?? null,
       accessToken: tokens.access_token,
@@ -42,7 +44,8 @@ export async function GET(request: Request) {
       scopes: tokens.scope?.split(" ") ?? [...SPOTIFY_SCOPES],
     });
 
-    return redirectToPath("/start");
+    /* Returning users go straight in; the intro is a one-off per account. */
+    return redirectToPath((await hasOnboarded(accountId)) ? "/library" : "/start");
   } catch {
     return failure("exchange-failed");
   }

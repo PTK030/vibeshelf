@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/layout/app-header";
 import { AttributionFooter } from "@/components/layout/attribution-footer";
 import { OnboardingFlow } from "@/features/onboarding/onboarding-flow";
+import { hasOnboarded } from "@/lib/auth/onboarding";
 import { readSession } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Start" };
@@ -10,6 +11,7 @@ export const metadata: Metadata = { title: "Start" };
 export default async function StartPage() {
   const session = await readSession();
   if (session === undefined) redirect("/");
+  if (await hasOnboarded(session.accountId)) redirect("/library");
 
   return (
     <>

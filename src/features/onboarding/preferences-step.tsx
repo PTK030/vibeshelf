@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback } from "react";
-import { Button, ButtonLink } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
+import { finishOnboarding } from "@/features/onboarding/actions";
 import type { Preferences } from "@/features/onboarding/preferences";
 
 interface PreferencesStepProps {
@@ -52,9 +53,11 @@ export function PreferencesStep({ preferences, onChange, onBack }: PreferencesSt
       </div>
 
       <div className="mt-8 flex flex-wrap gap-3">
-        <ButtonLink href="/library" size="lg">
-          Go to the library
-        </ButtonLink>
+        <form action={finishOnboarding}>
+          <Button type="submit" size="lg">
+            Go to the library
+          </Button>
+        </form>
         <Button variant="ghost" size="lg" onClick={onBack}>
           Back
         </Button>
