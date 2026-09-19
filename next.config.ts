@@ -1,6 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  /*
+   * The routes were Polish until the app switched to English. Anyone holding
+   * an old link or tab would otherwise hit a 404.
+   */
+  async redirects() {
+    return [
+      { source: "/biblioteka", destination: "/library", permanent: true },
+      { source: "/organizuj", destination: "/organize", permanent: true },
+      { source: "/ustawienia", destination: "/settings", permanent: true },
+    ];
+  },
+
   images: {
     remotePatterns: [
       // Album art and playlist covers.

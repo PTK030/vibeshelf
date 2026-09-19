@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/layout/app-header";
 import { AttributionFooter } from "@/components/layout/attribution-footer";
+import { Stagger, StaggerItem } from "@/components/ui/stagger";
 import { OrganizePanel, type ModelChoice } from "@/features/organize/organize-panel";
 import { providerMeta } from "@/lib/ai/providers";
 import { requireSession } from "@/lib/auth/require-session";
@@ -82,21 +83,25 @@ export default async function OrganizePage(props: PageProps<"/organize">) {
           ← Library
         </Link>
 
-        <h1 className="mt-4 text-xl font-bold">Propose playlists</h1>
-        <p className="mt-3 text-sm text-muted">
-          Analysing {Math.min(liked.total, 1500).toLocaleString("en-GB")} of{" "}
-          {liked.total.toLocaleString("en-GB")} liked songs through {meta.name}. Nothing is written
-          to Spotify until you approve the proposal.
-        </p>
+        <Stagger>
+          <StaggerItem>
+            <h1 className="mt-4 text-xl font-bold">Propose playlists</h1>
+            <p className="mt-3 text-sm text-muted">
+              Analysing {Math.min(liked.total, 1500).toLocaleString("en-GB")} of{" "}
+              {liked.total.toLocaleString("en-GB")} liked songs through {meta.name}. Nothing is
+              written to Spotify until you approve the proposal.
+            </p>
+          </StaggerItem>
 
-        <div className="mt-8">
-          <OrganizePanel
-            models={ordered}
-            likedCount={liked.total}
-            selectedModel={ai.model}
-            presetPrompt={presetPrompt}
-          />
-        </div>
+          <StaggerItem className="mt-8">
+            <OrganizePanel
+              models={ordered}
+              likedCount={liked.total}
+              selectedModel={ai.model}
+              presetPrompt={presetPrompt}
+            />
+          </StaggerItem>
+        </Stagger>
       </main>
       <AttributionFooter />
     </>

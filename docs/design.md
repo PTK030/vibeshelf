@@ -75,6 +75,12 @@ Anything that appears or disappears conditionally belongs in `AnimatePresence`
 with an exit variant. Mounting straight into the tree is the other half of what
 makes UI feel binary.
 
+Animate sections, not routes. A route-level wrapper fades the whole page in as
+one slab — header and footer included — and gives the eye nothing to follow.
+`Stagger` / `StaggerItem` (`src/components/ui/stagger.tsx`) build the page in
+reading order instead; the parent holds the variants, so children need no
+per-item delay prop.
+
 `prefers-reduced-motion` is honoured globally in `globals.css`.
 
 Framer Motion takes object props, which trips `react-perf/jsx-no-new-object-as-prop`.
