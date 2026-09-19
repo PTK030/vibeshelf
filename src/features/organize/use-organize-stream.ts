@@ -15,6 +15,7 @@ export interface OrganizeRequest {
   deepAnalysis: boolean;
   playlistScoring: boolean;
   maxTracks: number;
+  playlistId?: string;
 }
 
 export interface StreamState {

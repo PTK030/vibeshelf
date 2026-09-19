@@ -20,6 +20,8 @@ const RequestSchema = z.object({
   deepAnalysis: z.boolean().default(true),
   playlistScoring: z.boolean().default(true),
   maxTracks: z.number().int().min(50).max(3000).default(1500),
+  /* When set, only this playlist is analysed instead of the whole library. */
+  playlistId: z.string().optional(),
 });
 
 /* Phase weights keep the bar monotonic instead of jumping between stages. */
@@ -61,9 +63,17 @@ export async function POST(request: Request) {
       try {
         const client = new SpotifyClient(session.accessToken);
 
-        send("phase", { phase: "liked", label: "Reading your liked songs" });
+        send("phase", {
+          phase: "liked",
+          label:
+            input.playlistId === undefined ? "Reading your liked songs" : "Reading the playlist",
+        });
 
         const library = await loadLibrary(client, {
+          source:
+            input.playlistId === undefined
+              ? { kind: "liked" }
+              : { kind: "playlist", playlistId: input.playlistId },
           maxTracks: input.maxTracks,
           deepAnalysis: input.deepAnalysis,
           lyricsSampleSize: input.deepAnalysis ? 40 : 0,

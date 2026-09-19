@@ -55,8 +55,11 @@ There is no database — see `docs/architecture.md`.
 - **NEVER build an auth redirect from `request.url`.** Next normalises it to localhost
   whatever host was used, which moves the browser off the origin holding the session
   cookie. Use `redirectToPath()`.
-- **NEVER let the model see or return Spotify IDs.** It works on local chunk indices, so a
-  hallucinated ID is structurally impossible.
+- **NEVER let the classifier see or return Spotify IDs.** It works on local chunk indices, so a
+  hallucinated ID is structurally impossible. The ask endpoint is the exception: it does get
+  ids, and every id it returns is checked against the ones we supplied before becoming a link.
+- **NEVER ask a model for a URL.** Give it ids and build the URL server-side; a model will
+  return a plausible invented link otherwise.
 - **NEVER write to Spotify without the user approving a plan first.** Analysis is read-only.
 - Every rendered track needs a link back to Spotify — a Policy requirement, not a nicety.
   Always render it with `components/spotify/open-in-spotify.tsx`.

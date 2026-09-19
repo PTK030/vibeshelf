@@ -1,7 +1,10 @@
 "use client";
 
 import { type ChangeEvent, type FormEvent, useCallback, useRef, useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
+import { SpotifyMark } from "@/components/spotify/spotify-mark";
+import type { ResolvedReference } from "@/lib/ai/ask-schema";
 import { cn } from "@/lib/cn";
 import { SECTION_TRANSITION } from "@/lib/motion";
 
@@ -10,14 +13,20 @@ interface AskAiProps {
   enabled: boolean;
 }
 
+interface Action {
+  kind: "organize-library" | "organize-playlist";
+  label: string;
+  href: string;
+}
+
 const SUGGESTIONS = [
-  "What do I listen to most, and what does that say about me?",
-  "Which genres are in my library but barely played?",
-  "What should I try that is close to my favourites?",
+  "What did I listen to today?",
+  "Which genres sit in my library but barely get played?",
+  "Sort my liked songs into playlists",
   "Do my playlists overlap?",
 ];
 
-const ANSWER = {
+const PANEL = {
   initial: { opacity: 0, height: 0 },
   animate: { opacity: 1, height: "auto" },
   exit: { opacity: 0, height: 0 },
@@ -26,6 +35,8 @@ const ANSWER = {
 export function AskAi({ enabled }: AskAiProps) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
+  const [references, setReferences] = useState<ResolvedReference[]>([]);
+  const [action, setAction] = useState<Action | undefined>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const abortRef = useRef<AbortController | undefined>(undefined);
@@ -42,6 +53,8 @@ export function AskAi({ enabled }: AskAiProps) {
     setBusy(true);
     setError(undefined);
     setAnswer("");
+    setReferences([]);
+    setAction(undefined);
 
     try {
       const response = await fetch("/api/ask", {
@@ -57,13 +70,23 @@ export function AskAi({ enabled }: AskAiProps) {
         return;
       }
 
-      /* Plain text stream: append as it arrives so the answer types itself out. */
       const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+      let buffer = "";
+
       /* eslint-disable no-await-in-loop -- reading a stream is sequential. */
       for (;;) {
         const { done, value } = await reader.read();
         if (done) break;
-        setAnswer((current) => current + value);
+
+        buffer += value;
+        const lines = buffer.split("\n");
+        /* The last piece may be a partial line; keep it for the next read. */
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (line.trim() === "") continue;
+          applyMessage(line, { setAnswer, setReferences, setAction, setError });
+        }
       }
       /* eslint-enable no-await-in-loop */
     } catch {
@@ -90,6 +113,8 @@ export function AskAi({ enabled }: AskAiProps) {
     [ask],
   );
 
+  const hasOutput = answer !== "" || error !== undefined;
+
   return (
     <section>
       <form onSubmit={handleSubmit} className="relative">
@@ -99,7 +124,7 @@ export function AskAi({ enabled }: AskAiProps) {
           disabled={!enabled || busy}
           placeholder={
             enabled
-              ? "Ask about your music — e.g. what am I overplaying?"
+              ? "Ask about your music, or tell it what to sort"
               : "Connect a model in settings to ask questions"
           }
           aria-label="Ask about your library"
@@ -124,7 +149,7 @@ export function AskAi({ enabled }: AskAiProps) {
         </button>
       </form>
 
-      {enabled && answer === "" && !busy && error === undefined && (
+      {enabled && !hasOutput && !busy && (
         <div className="mt-3 flex flex-wrap gap-2">
           {SUGGESTIONS.map((suggestion) => (
             <SuggestionChip key={suggestion} text={suggestion} onPick={useSuggestion} />
@@ -133,29 +158,122 @@ export function AskAi({ enabled }: AskAiProps) {
       )}
 
       <AnimatePresence initial={false}>
-        {(answer !== "" || error !== undefined) && (
+        {hasOutput && (
           <motion.div
-            initial={ANSWER.initial}
-            animate={ANSWER.animate}
-            exit={ANSWER.exit}
+            initial={PANEL.initial}
+            animate={PANEL.animate}
+            exit={PANEL.exit}
             transition={SECTION_TRANSITION}
             className="overflow-hidden"
           >
             <div
               className={cn(
-                "mt-4 rounded-md border p-5 text-sm whitespace-pre-wrap",
-                error === undefined
-                  ? "border-border bg-surface text-foreground"
-                  : "border-danger/40 bg-surface text-danger",
+                "mt-4 rounded-md border p-5",
+                error === undefined ? "border-border bg-surface" : "border-danger/40 bg-surface",
               )}
             >
-              {error ?? answer}
-              {busy && <span className="ml-0.5 animate-pulse text-accent">▍</span>}
+              <p
+                className={cn(
+                  "text-sm whitespace-pre-wrap",
+                  error === undefined ? "text-foreground" : "text-danger",
+                )}
+              >
+                {error ?? answer}
+                {busy && <span className="ml-0.5 animate-pulse text-accent">▍</span>}
+              </p>
+
+              {references.length > 0 && <ReferenceList references={references} />}
+              {action !== undefined && <ActionButton action={action} />}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </section>
+  );
+}
+
+interface Setters {
+  setAnswer: (value: string) => void;
+  setReferences: (value: ResolvedReference[]) => void;
+  setAction: (value: Action | undefined) => void;
+  setError: (value: string) => void;
+}
+
+function applyMessage(line: string, setters: Setters): void {
+  let message: unknown;
+  try {
+    message = JSON.parse(line);
+  } catch {
+    return;
+  }
+
+  const payload = message as {
+    type?: string;
+    answer?: string;
+    references?: ResolvedReference[];
+    action?: Action;
+    message?: string;
+  };
+
+  if (payload.type === "answer" && payload.answer !== undefined) {
+    setters.setAnswer(payload.answer);
+    return;
+  }
+
+  if (payload.type === "done") {
+    if (payload.answer !== undefined) setters.setAnswer(payload.answer);
+    setters.setReferences(payload.references ?? []);
+    setters.setAction(payload.action);
+    return;
+  }
+
+  if (payload.type === "error") {
+    setters.setError(payload.message ?? "The model failed to answer.");
+  }
+}
+
+function ReferenceList({ references }: { references: ResolvedReference[] }) {
+  return (
+    <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-4">
+      {references.map((reference) => (
+        <a
+          key={`${reference.kind}-${reference.url}`}
+          href={reference.url}
+          target="_blank"
+          rel="noreferrer noopener"
+          className={cn(
+            "inline-flex items-center gap-2 rounded-pill bg-elevated py-1.5 pr-3 pl-2.5",
+            "text-2xs text-muted transition-colors duration-350 ease-smooth",
+            "hover:bg-surface-hover hover:text-foreground",
+          )}
+        >
+          <SpotifyMark className="size-3.5" />
+          {reference.label}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+/*
+ * The whole point of the action: "sort playlist X" becomes a button that opens
+ * the analysis with the brief already written, instead of instructions the
+ * user has to follow themselves.
+ */
+function ActionButton({ action }: { action: Action }) {
+  return (
+    <div className="mt-4 border-t border-border pt-4">
+      <Link
+        href={action.href}
+        className={cn(
+          "label-caps inline-flex h-10 items-center rounded-pill px-5 text-2xs",
+          "bg-accent text-on-accent transition-all duration-350 ease-smooth",
+          "hover:-translate-y-px hover:brightness-105 active:translate-y-0",
+        )}
+      >
+        {action.label}
+      </Link>
+    </div>
   );
 }
 

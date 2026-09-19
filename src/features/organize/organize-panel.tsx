@@ -28,8 +28,10 @@ interface OrganizePanelProps {
   likedCount: number;
   /* The model saved on the session, so the choice survives a reload. */
   selectedModel: string;
-  /* Prefilled brief when arriving from a quick action on the library page. */
+  /* Prefilled brief when arriving from a quick action or an AI action. */
   presetPrompt?: string;
+  /* Set when the run should cover one playlist rather than the whole library. */
+  playlistId?: string;
 }
 
 /*
@@ -54,6 +56,7 @@ export function OrganizePanel({
   likedCount,
   selectedModel,
   presetPrompt,
+  playlistId,
 }: OrganizePanelProps) {
   const { state, start, cancel } = useOrganizeStream();
   const [preferences, setPreferences] = useState<Preferences>(DEFAULT_PREFERENCES);
@@ -104,8 +107,9 @@ export function OrganizePanel({
       deepAnalysis: preferences.deepAnalysis,
       playlistScoring: preferences.playlistScoring,
       maxTracks: Math.min(likedCount, 1500),
+      playlistId,
     });
-  }, [model, prompt, preferences, likedCount, start]);
+  }, [model, prompt, preferences, likedCount, playlistId, start]);
 
   return (
     <div className="flex flex-col gap-6">

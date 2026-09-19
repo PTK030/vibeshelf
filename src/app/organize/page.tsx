@@ -32,6 +32,7 @@ function orderModels(models: ModelChoice[]): ModelChoice[] {
 export default async function OrganizePage(props: PageProps<"/organize">) {
   const search = await props.searchParams;
   const presetPrompt = typeof search.prompt === "string" ? search.prompt : undefined;
+  const playlistId = typeof search.playlist === "string" ? search.playlist : undefined;
 
   const session = await requireSession();
   const ai = session.ai;
@@ -44,12 +45,18 @@ export default async function OrganizePage(props: PageProps<"/organize">) {
    * Only OpenRouter has a catalogue worth fetching. Anthropic and OpenAI are a
    * short curated list, so they come from config and cost no request.
    */
-  const [liked, openrouterModels] = await Promise.all([
+  const [liked, openrouterModels, playlist] = await Promise.all([
     client.savedTracksPage(0, 1),
     ai.provider === "openrouter"
       ? listStructuredOutputModels(ai.key).catch(() => [])
       : Promise.resolve([]),
+    /* Named in the heading so it is obvious what the run will cover. */
+    playlistId === undefined
+      ? Promise.resolve(undefined)
+      : client.playlist(playlistId).catch(() => undefined),
   ]);
+
+  const trackCount = playlist?.tracks?.total ?? liked.total;
 
   const choices: ModelChoice[] =
     ai.provider === "openrouter"
@@ -85,20 +92,24 @@ export default async function OrganizePage(props: PageProps<"/organize">) {
 
         <Stagger>
           <StaggerItem>
-            <h1 className="mt-4 text-xl font-bold">Propose playlists</h1>
+            <h1 className="mt-4 text-xl font-bold">
+              {playlist === undefined ? "Propose playlists" : `Sort ${playlist.name}`}
+            </h1>
             <p className="mt-3 text-sm text-muted">
-              Analysing {Math.min(liked.total, 1500).toLocaleString("en-GB")} of{" "}
-              {liked.total.toLocaleString("en-GB")} liked songs through {meta.name}. Nothing is
-              written to Spotify until you approve the proposal.
+              Analysing {Math.min(trackCount, 1500).toLocaleString("en-GB")} of{" "}
+              {trackCount.toLocaleString("en-GB")}{" "}
+              {playlist === undefined ? "liked songs" : "tracks in this playlist"} through{" "}
+              {meta.name}. Nothing is written to Spotify until you approve the proposal.
             </p>
           </StaggerItem>
 
           <StaggerItem className="mt-8">
             <OrganizePanel
               models={ordered}
-              likedCount={liked.total}
+              likedCount={trackCount}
               selectedModel={ai.model}
               presetPrompt={presetPrompt}
+              playlistId={playlistId}
             />
           </StaggerItem>
         </Stagger>

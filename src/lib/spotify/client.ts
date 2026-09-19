@@ -9,6 +9,7 @@ import {
   ArtistSchema,
   CreatedPlaylistSchema,
   CurrentUserSchema,
+  PlaylistItemsPageSchema,
   PlaylistPageSchema,
   PlaylistSchema,
   RecentlyPlayedSchema,
@@ -141,6 +142,19 @@ export class SpotifyClient {
    */
   async recentlyPlayed(limit = 50) {
     return await this.request(`/me/player/recently-played?limit=${limit}`, RecentlyPlayedSchema);
+  }
+
+  /*
+   * /items, not /tracks — the old route was removed in February 2026. `fields`
+   * trims the payload to what the pipeline actually reads.
+   */
+  async playlistItemsPage(playlistId: string, offset: number, limit = 50) {
+    const fields =
+      "total,limit,offset,next,items(added_at,item(id,name,duration_ms,explicit,external_ids,external_urls,artists(id,name),album(id,name,release_date,images)))";
+    return await this.request(
+      `/playlists/${playlistId}/items?limit=${limit}&offset=${offset}&fields=${encodeURIComponent(fields)}`,
+      PlaylistItemsPageSchema,
+    );
   }
 
   async playlist(playlistId: string) {

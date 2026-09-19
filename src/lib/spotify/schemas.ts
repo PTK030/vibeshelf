@@ -135,3 +135,17 @@ export const PlaylistSchema = z.object({
   owner: z.object({ display_name: z.string().nullable().optional() }).optional(),
   external_urls: z.object({ spotify: z.string() }).optional(),
 });
+
+/*
+ * February 2026 renamed the field as well as the route: tracks -> items and
+ * items[].track -> items[].item.
+ */
+export const PlaylistItemsPageSchema = z.object({
+  items: z.array(
+    z.object({ added_at: z.string().nullable().optional(), item: TrackSchema.nullable() }),
+  ),
+  total: z.number(),
+  limit: z.number(),
+  offset: z.number(),
+  next: z.string().nullable(),
+});
