@@ -10,7 +10,7 @@ import { z } from "zod";
  * still only ships inside Codex tooling. OpenRouter is therefore the one
  * provider here that can offer a real OAuth flow.
  */
-export const PROVIDER_IDS = ["openrouter", "anthropic", "openai"] as const;
+export const PROVIDER_IDS = ["openrouter", "opencode", "anthropic", "openai", "custom"] as const;
 
 export const ProviderIdSchema = z.enum(PROVIDER_IDS);
 export type ProviderId = z.infer<typeof ProviderIdSchema>;
@@ -23,6 +23,15 @@ export interface ProviderMeta {
   keyLabel: string;
   keyPrefix: string;
   keyUrl: string;
+  /*
+   * Set for anything reached through an OpenAI-compatible endpoint. Fixed for
+   * a known provider; supplied by the user for "custom".
+   */
+  baseUrl?: string;
+  /* True when the user has to type the base URL themselves. */
+  needsBaseUrl?: boolean;
+  /* Its /models endpoint is OpenAI-shaped and worth fetching live. */
+  hasModelList?: boolean;
   supportsOauth: boolean;
   /* Why OAuth is unavailable, when it is. Shown in the UI, not hidden. */
   oauthNote?: string;
@@ -46,6 +55,23 @@ export const PROVIDERS: Record<ProviderId, ProviderMeta> = {
       { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash", hint: "fast and cheap" },
       { id: "openai/gpt-5-nano", name: "GPT-5 nano", hint: "cheapest" },
       { id: "deepseek/deepseek-v4-flash", name: "DeepSeek V4 Flash", hint: "cheap, long context" },
+    ],
+  },
+  opencode: {
+    id: "opencode",
+    name: "OpenCode Zen",
+    blurb: "Several genuinely free models, including DeepSeek V4 Flash.",
+    keyLabel: "OpenCode Zen key",
+    keyPrefix: "",
+    keyUrl: "https://opencode.ai/auth",
+    baseUrl: "https://opencode.ai/zen/v1",
+    hasModelList: true,
+    supportsOauth: false,
+    defaultModel: "deepseek-v4-flash-free",
+    models: [
+      { id: "deepseek-v4-flash-free", name: "DeepSeek V4 Flash", hint: "free" },
+      { id: "nemotron-3-ultra-free", name: "Nemotron 3 Ultra", hint: "free" },
+      { id: "mimo-v2.5-free", name: "MiMo v2.5", hint: "free" },
     ],
   },
   anthropic: {
@@ -82,6 +108,19 @@ export const PROVIDERS: Record<ProviderId, ProviderMeta> = {
       { id: "gpt-4.1-nano", name: "GPT-4.1 nano", hint: "long context" },
     ],
   },
+  custom: {
+    id: "custom",
+    name: "Custom endpoint",
+    blurb: "Anything OpenAI-compatible: z.ai, Groq, Cerebras, a local Ollama.",
+    keyLabel: "API key",
+    keyPrefix: "",
+    keyUrl: "https://platform.openai.com/docs/api-reference",
+    needsBaseUrl: true,
+    hasModelList: true,
+    supportsOauth: false,
+    defaultModel: "",
+    models: [],
+  },
 };
 
 export function providerMeta(id: ProviderId): ProviderMeta {
@@ -94,10 +133,24 @@ export function providerMeta(id: ProviderId): ProviderMeta {
  */
 export function looksLikeKey(provider: ProviderId, key: string): boolean {
   const trimmed = key.trim();
-  if (trimmed.length < 20) return false;
+  if (trimmed.length < 8) return false;
 
   /* OpenAI keys also start with sk-, so only reject a clear mismatch. */
   if (provider === "anthropic") return trimmed.startsWith("sk-ant-");
   if (provider === "openrouter") return trimmed.startsWith("sk-or-");
-  return trimmed.startsWith("sk-");
+  if (provider === "openai") return trimmed.startsWith("sk-");
+
+  /* OpenCode Zen and arbitrary endpoints set no format we can rely on. */
+  return true;
 }
+
+/*
+ * Well-known OpenAI-compatible endpoints, offered as suggestions on the custom
+ * provider so nobody has to go hunting for the URL.
+ */
+export const CUSTOM_PRESETS = [
+  { label: "z.ai (GLM)", baseUrl: "https://api.z.ai/api/paas/v4", note: "free Flash models" },
+  { label: "Groq", baseUrl: "https://api.groq.com/openai/v1", note: "free tier" },
+  { label: "Cerebras", baseUrl: "https://api.cerebras.ai/v1", note: "free tier" },
+  { label: "Ollama (local)", baseUrl: "http://127.0.0.1:11434/v1", note: "runs on your machine" },
+] as const;

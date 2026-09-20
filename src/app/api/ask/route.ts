@@ -98,13 +98,27 @@ export async function POST(request: Request) {
         const action =
           final.action === undefined ? undefined : validateAction(final.action, context.playlists);
 
-        send({
-          type: "done",
-          answer: stripIds(final.answer ?? lastAnswer),
-          references,
-          action,
-        });
+        const answer = stripIds(final.answer ?? lastAnswer).trim();
+
+        /*
+         * An empty answer used to render as nothing at all — the panel stayed
+         * hidden and the question looked ignored. Say so instead.
+         */
+        if (answer === "") {
+          console.warn("[ask] model produced no answer text", {
+            partialKeys: Object.keys(lastPartial),
+          });
+          send({
+            type: "error",
+            message: "The model returned an empty answer. Try rephrasing, or pick another model.",
+          });
+          return;
+        }
+
+        send({ type: "done", answer, references, action });
       } catch (error) {
+        /* Surfaced in the server log too — the browser only sees the message. */
+        console.error("[ask] failed", error);
         send({
           type: "error",
           message: error instanceof Error ? error.message : "The model failed to answer.",

@@ -39,6 +39,8 @@ export function AskAi({ enabled }: AskAiProps) {
   const [action, setAction] = useState<Action | undefined>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
   const [busy, setBusy] = useState(false);
+  /* True once a request has finished, however it finished. */
+  const [settled, setSettled] = useState(false);
   const abortRef = useRef<AbortController | undefined>(undefined);
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +63,7 @@ export function AskAi({ enabled }: AskAiProps) {
       abortRef.current = controller;
 
       setBusy(true);
+      setSettled(false);
       setError(undefined);
       setAnswer("");
       setReferences([]);
@@ -112,6 +115,7 @@ export function AskAi({ enabled }: AskAiProps) {
         if (!controller.signal.aborted) setError("Connection interrupted.");
       } finally {
         setBusy(false);
+        setSettled(true);
       }
     },
     [growAnswer],
@@ -134,7 +138,11 @@ export function AskAi({ enabled }: AskAiProps) {
     [ask],
   );
 
-  const hasOutput = answer !== "" || error !== undefined;
+  const emptyResult = settled && !busy && answer === "" && error === undefined;
+  const hasOutput = answer !== "" || error !== undefined || emptyResult;
+  const isProblem = error !== undefined || emptyResult;
+  const bodyText =
+    error ?? (emptyResult ? "No answer came back. Try again or pick another model." : answer);
 
   return (
     <section>
@@ -187,40 +195,61 @@ export function AskAi({ enabled }: AskAiProps) {
             transition={SECTION_TRANSITION}
             className="overflow-hidden"
           >
-            <div
-              className={cn(
-                "mt-4 rounded-md border p-5",
-                error === undefined ? "border-border bg-surface" : "border-danger/40 bg-surface",
-              )}
-            >
-              <p
-                className={cn(
-                  "text-sm whitespace-pre-wrap",
-                  error === undefined ? "text-foreground" : "text-danger",
-                )}
-              >
-                {error ?? answer}
-                {busy && (
-                  /*
-                   * A drawn block, not the ▍ glyph, whose baseline placement
-                   * varies by font. align-text-bottom pins its foot to the
-                   * bottom of the text box, which is where a caret belongs —
-                   * translating it by hand only looked right at one font size.
-                   */
-                  <span
-                    aria-hidden="true"
-                    className="ml-1 inline-block h-[1.1em] w-[2px] animate-pulse rounded-[1px] bg-accent align-text-bottom"
-                  />
-                )}
-              </p>
-
-              {references.length > 0 && <ReferenceList references={references} />}
-              {action !== undefined && <ActionButton action={action} />}
-            </div>
+            <ResultPanel
+              body={bodyText}
+              isProblem={isProblem}
+              busy={busy}
+              references={references}
+              action={action}
+            />
           </motion.div>
         )}
       </AnimatePresence>
     </section>
+  );
+}
+
+interface ResultPanelProps {
+  body: string;
+  isProblem: boolean;
+  busy: boolean;
+  references: ResolvedReference[];
+  action: Action | undefined;
+}
+
+function ResultPanel({ body, isProblem, busy, references, action }: ResultPanelProps) {
+  return (
+    <div
+      className={cn(
+        "mt-4 rounded-md border p-5",
+        isProblem ? "border-danger/40 bg-surface" : "border-border bg-surface",
+      )}
+    >
+      <p
+        className={cn("text-sm whitespace-pre-wrap", isProblem ? "text-danger" : "text-foreground")}
+      >
+        {body}
+        {busy && <Caret />}
+      </p>
+
+      {references.length > 0 && <ReferenceList references={references} />}
+      {action !== undefined && <ActionButton action={action} />}
+    </div>
+  );
+}
+
+/*
+ * A drawn block, not the ▍ glyph, whose baseline placement varies by font.
+ * align-text-bottom pins its foot to the bottom of the text box, which is
+ * where a caret belongs — translating it by hand only looked right at one
+ * font size.
+ */
+function Caret() {
+  return (
+    <span
+      aria-hidden="true"
+      className="ml-1 inline-block h-[1.1em] w-[2px] animate-pulse rounded-[1px] bg-accent align-text-bottom"
+    />
   );
 }
 
