@@ -1,4 +1,5 @@
-import { hasOnboarded } from "@/lib/auth/onboarding";
+import { recallAi } from "@/lib/auth/ai-store";
+import { hasOnboarded, markOnboarded } from "@/lib/auth/onboarding";
 import { redirectToPath } from "@/lib/auth/redirect";
 import { consumePkce, writeSession } from "@/lib/auth/session";
 import { SpotifyClient } from "@/lib/spotify/client";
@@ -32,6 +33,12 @@ export async function GET(request: Request) {
     const now = Date.now();
     const accountId = profile.account_id ?? profile.id;
 
+    /*
+     * Carry the AI connection over from a previous session. Without this the
+     * key is gone on every sign-in and onboarding has to run again.
+     */
+    const ai = await recallAi(accountId);
+
     await writeSession({
       /* Prefer the stable pseudonymous id; fall back while it rolls out. */
       accountId,
@@ -42,7 +49,11 @@ export async function GET(request: Request) {
       expiresAt: now + tokens.expires_in * 1000,
       authorizedAt: now,
       scopes: tokens.scope?.split(" ") ?? [...SPOTIFY_SCOPES],
+      ai,
     });
+
+    /* A returning account with a provider already set up has finished setup. */
+    if (ai !== undefined) await markOnboarded(accountId);
 
     /* Returning users go straight in; the intro is a one-off per account. */
     return redirectToPath((await hasOnboarded(accountId)) ? "/library" : "/start");

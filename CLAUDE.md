@@ -1,24 +1,30 @@
 # CLAUDE.md
 
-AI-assisted organiser for a Spotify library: sign in with Spotify, bring your own OpenRouter
-key, pick a model, and let it group Liked Songs into themed playlists — with a full preview
-and edit step before anything is written back to Spotify.
+AI-assisted organiser for a Spotify library: sign in with Spotify, bring your own AI key
+(OpenRouter, Anthropic or OpenAI), pick a model, and let it group Liked Songs into themed
+playlists — with a full preview and edit step before anything is written back to Spotify.
 
 ## Repository map
 
 | Path                     | What's in it                                                            |
 | ------------------------ | ----------------------------------------------------------------------- |
-| `src/app/(marketing)`    | Landing page, sign-in entry point                                       |
-| `src/app/(app)`          | Authenticated shell: library, organize, plans, cleanup, settings        |
-| `src/app/api`            | OAuth callbacks, job tick/stream/sweep route handlers                   |
-| `src/components/ui`      | Design-system primitives (button, card, dialog, progress…)              |
+| `src/app/page.tsx`       | Landing: hero plus the Spotify sign-in button                           |
+| `src/app/start`          | Onboarding after sign-in (Framer Motion)                                |
+| `src/app/library`        | Signed-in home: ask box, stats, quick actions, insights                 |
+| `src/app/organize`       | Run the analysis and review the plan                                    |
+| `src/app/settings`       | AI provider, model and preferences                                      |
+| `src/app/not-found.tsx`  | Branded 404                                                             |
+| `src/app/api/auth`       | OAuth routes and sign-out                                               |
+| `src/app/api/ask`        | Free-form questions; streams an answer plus links and an action         |
+| `src/app/api/organize`   | The analysis run, reported over SSE                                     |
+| `src/components/ui`      | Design-system primitives (button, card, toggle, progress, stagger…)     |
 | `src/components/spotify` | Spotify mark, sign-in and "Open in Spotify" — carry Policy requirements |
 | `src/features/*`         | Feature slices, one folder per user-facing capability                   |
+| `src/lib/ai`             | Provider catalogue, prompts, chunking, reconciliation                   |
 | `src/lib/spotify`        | Thin `fetch` client, adaptive rate limiter, Zod response schemas        |
-| `src/lib/openrouter`     | Model list, key validation, structured-output calls                     |
-| `src/lib/db`             | Drizzle schema and migrations                                           |
-| `src/lib/jobs`           | `runJobSlice` state machine, step handlers, SSE events                  |
-| `proxy.ts`               | Next 16's renamed middleware — guards the `(app)` group                 |
+| `src/lib/auth`           | Encrypted cookie session; `requireSession()` refreshes tokens           |
+| `src/lib/library`        | Loading and enriching tracks from liked songs or one playlist           |
+| `src/lib/enrichment`     | ReccoBeats audio features and lyric signals                             |
 
 ## Docs
 
@@ -28,7 +34,8 @@ and edit step before anything is written back to Spotify.
 | -------------------------- | ----------------------------------------------------------- |
 | `docs/coding-standards.md` | Naming, modules, types, validation, error handling          |
 | `docs/spotify-api.md`      | What is actually true about the API in 2026, and what broke |
-| `docs/design.md`           | Design tokens and the brand boundary we must not cross      |
+| `docs/design.md`           | Design tokens, measured contrast, motion                    |
+| `docs/architecture.md`     | Why there is no database, and what that costs               |
 
 ## Quick start
 

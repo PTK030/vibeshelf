@@ -3,6 +3,7 @@
 import { type ProviderId, ProviderIdSchema, providerMeta } from "@/lib/ai/providers";
 import { validateProviderKey } from "@/lib/ai/validate-key";
 import { redirect } from "next/navigation";
+import { forgetAi, rememberAi } from "@/lib/auth/ai-store";
 import { markOnboarded } from "@/lib/auth/onboarding";
 import { readSession, writeSession } from "@/lib/auth/session";
 
@@ -40,14 +41,11 @@ export async function connectProvider(
   const check = await validateProviderKey(provider, trimmed);
   if (!check.ok) return check;
 
-  await writeSession({
-    ...session,
-    ai: {
-      provider,
-      key: trimmed,
-      model: model ?? providerMeta(provider).defaultModel,
-    },
-  });
+  const ai = { provider, key: trimmed, model: model ?? providerMeta(provider).defaultModel };
+
+  await writeSession({ ...session, ai });
+  /* Survives sign-out, so the next sign-in does not start from scratch. */
+  await rememberAi(session.accountId, ai);
 
   return check;
 }
@@ -58,7 +56,10 @@ export async function updateModel(model: string): Promise<ConnectResult> {
     return { ok: false, message: "Connect an AI provider first." };
   }
 
-  await writeSession({ ...session, ai: { ...session.ai, model } });
+  const ai = { ...session.ai, model };
+  await writeSession({ ...session, ai });
+  await rememberAi(session.accountId, ai);
+
   return { ok: true, message: "Model saved." };
 }
 
@@ -68,6 +69,8 @@ export async function disconnectProvider(): Promise<void> {
 
   const { ai: _removed, ...rest } = session;
   await writeSession(rest);
+  /* Disconnect is explicit, so forget it everywhere. */
+  await forgetAi(session.accountId);
 }
 
 /*
