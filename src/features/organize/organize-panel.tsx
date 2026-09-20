@@ -21,6 +21,7 @@ export interface ModelChoice {
   id: string;
   name: string;
   promptPerMillion: number | undefined;
+  isFree: boolean;
 }
 
 interface OrganizePanelProps {
@@ -39,6 +40,13 @@ interface OrganizePanelProps {
  * every section enters and leaves on the same curve. Conditional rendering
  * without an exit animation is what made this feel like a light switch.
  */
+/* Free models are why this can be tried without spending anything. */
+function modelSuffix(model: ModelChoice): string {
+  if (model.isFree) return " — free";
+  if (model.promptPerMillion === undefined) return "";
+  return ` — ${model.promptPerMillion.toFixed(2)}/1M`;
+}
+
 const SECTION = {
   initial: { opacity: 0, y: 12, height: 0 },
   animate: { opacity: 1, y: 0, height: "auto" },
@@ -146,9 +154,7 @@ export function OrganizePanel({
             {models.map((option) => (
               <option key={option.id} value={option.id}>
                 {option.name}
-                {option.promptPerMillion === undefined
-                  ? ""
-                  : ` — $${option.promptPerMillion.toFixed(2)}/1M`}
+                {modelSuffix(option)}
               </option>
             ))}
           </select>

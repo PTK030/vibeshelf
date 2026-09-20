@@ -21,12 +21,14 @@ const PREFERRED = [
   "deepseek/deepseek-chat",
 ];
 
+/* Free models first, then the preferred defaults, then everything else. */
 function orderModels(models: ModelChoice[]): ModelChoice[] {
-  const rank = (id: string) => {
-    const index = PREFERRED.indexOf(id);
+  const rank = (model: ModelChoice) => {
+    if (model.isFree) return -1;
+    const index = PREFERRED.indexOf(model.id);
     return index === -1 ? PREFERRED.length : index;
   };
-  return models.toSorted((a, b) => rank(a.id) - rank(b.id) || a.name.localeCompare(b.name));
+  return models.toSorted((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
 }
 
 export default async function OrganizePage(props: PageProps<"/organize">) {
@@ -65,19 +67,21 @@ export default async function OrganizePage(props: PageProps<"/organize">) {
             id: model.id,
             name: model.name,
             promptPerMillion: model.promptPerMillion,
+            isFree: model.isFree,
           })),
         )
       : meta.models.map((model) => ({
           id: model.id,
           name: `${model.name} — ${model.hint}`,
           promptPerMillion: undefined,
+          isFree: false,
         }));
 
   /* Keep the saved model selectable even if it is far down OpenRouter's list. */
   const ordered =
     choices.length === 0 || choices.some((choice) => choice.id === ai.model)
       ? choices
-      : [{ id: ai.model, name: ai.model, promptPerMillion: undefined }, ...choices];
+      : [{ id: ai.model, name: ai.model, promptPerMillion: undefined, isFree: false }, ...choices];
 
   return (
     <>

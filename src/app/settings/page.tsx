@@ -4,7 +4,12 @@ import { AppHeader } from "@/components/layout/app-header";
 import { AttributionFooter } from "@/components/layout/attribution-footer";
 import { Card } from "@/components/ui/card";
 import { Stagger, StaggerItem } from "@/components/ui/stagger";
+import type { ModelChoice } from "@/features/settings/model-picker";
 import { SettingsPanel } from "@/features/settings/settings-panel";
+import { maskKey } from "@/lib/ai/mask-key";
+import { providerMeta } from "@/lib/ai/providers";
+import type { Session } from "@/lib/auth/session";
+import { listStructuredOutputModels } from "@/lib/openrouter/client";
 import { requireSession } from "@/lib/auth/require-session";
 
 export const metadata: Metadata = { title: "Settings" };
@@ -15,6 +20,15 @@ const CONSENT_DAYS = 180;
 
 export default async function SettingsPage() {
   const session = await requireSession();
+
+  const ai = session.ai;
+
+  /*
+   * OpenRouter has a live catalogue worth showing — several hundred models, a
+   * handful of them free. The other providers are a short curated list and
+   * cost no request.
+   */
+  const models: ModelChoice[] = await loadModels(ai);
 
   const elapsedDays = Math.floor((Date.now() - session.authorizedAt) / 86_400_000);
   const daysLeft = Math.max(0, CONSENT_DAYS - elapsedDays);
@@ -37,7 +51,12 @@ export default async function SettingsPage() {
           </StaggerItem>
 
           <StaggerItem>
-            <SettingsPanel connected={session.ai?.provider} model={session.ai?.model} />
+            <SettingsPanel
+              connected={ai?.provider}
+              model={ai?.model}
+              models={models}
+              maskedKey={ai === undefined ? undefined : maskKey(ai.key)}
+            />
           </StaggerItem>
 
           <StaggerItem className="mt-10">
@@ -71,4 +90,27 @@ export default async function SettingsPage() {
       <AttributionFooter />
     </>
   );
+}
+
+async function loadModels(ai: Session["ai"]): Promise<ModelChoice[]> {
+  if (ai === undefined) return [];
+
+  if (ai.provider === "openrouter") {
+    const live = await listStructuredOutputModels(ai.key).catch(() => []);
+    return live.map((model) => ({
+      id: model.id,
+      name: model.name,
+      isFree: model.isFree,
+      promptPerMillion: model.promptPerMillion,
+      contextLength: model.contextLength,
+    }));
+  }
+
+  return providerMeta(ai.provider).models.map((model) => ({
+    id: model.id,
+    name: `${model.name} — ${model.hint}`,
+    isFree: false,
+    promptPerMillion: undefined,
+    contextLength: undefined,
+  }));
 }

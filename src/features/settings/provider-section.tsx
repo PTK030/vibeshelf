@@ -3,15 +3,20 @@
 import { type ChangeEvent, type FormEvent, useCallback, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { connectProvider, disconnectProvider, updateModel } from "@/features/onboarding/actions";
+import { ModelPicker, type ModelChoice } from "@/features/settings/model-picker";
 import { PROVIDER_IDS, type ProviderId, providerMeta } from "@/lib/ai/providers";
 import { cn } from "@/lib/cn";
 
 interface ProviderSectionProps {
   connected: ProviderId | undefined;
   model: string | undefined;
+  /* Live catalogue for the connected provider; curated list otherwise. */
+  models: readonly ModelChoice[];
+  /* Masked form of the stored key — the key itself never reaches the browser. */
+  maskedKey: string | undefined;
 }
 
-export function ProviderSection({ connected, model }: ProviderSectionProps) {
+export function ProviderSection({ connected, model, models, maskedKey }: ProviderSectionProps) {
   const [provider, setProvider] = useState<ProviderId>(connected ?? "openrouter");
   const [apiKey, setApiKey] = useState("");
   const [selectedModel, setSelectedModel] = useState(model ?? "");
@@ -89,7 +94,16 @@ export function ProviderSection({ connected, model }: ProviderSectionProps) {
         </div>
 
         {isActiveProvider && connected !== undefined && (
-          <ModelPicker models={meta.models} value={selectedModel} onChange={handleModel} />
+          <ModelPicker models={models} value={selectedModel} onChange={handleModel} />
+        )}
+
+        {isActiveProvider && maskedKey !== undefined && (
+          <p className="mt-5 flex items-center gap-2 text-xs text-muted">
+            <span>Connected key:</span>
+            <code className="rounded-sm bg-elevated px-2 py-1 font-mono text-2xs text-foreground">
+              {maskedKey}
+            </code>
+          </p>
         )}
 
         <label className="mt-5 block">
@@ -136,35 +150,6 @@ export function ProviderSection({ connected, model }: ProviderSectionProps) {
         </div>
       </form>
     </section>
-  );
-}
-
-interface ModelPickerProps {
-  models: ReadonlyArray<{ id: string; name: string; hint: string }>;
-  value: string;
-  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
-}
-
-function ModelPicker({ models, value, onChange }: ModelPickerProps) {
-  const known = models.some((model) => model.id === value);
-
-  return (
-    <label className="mt-5 block">
-      <span className="mb-2 block text-xs font-semibold text-muted">Model</span>
-      <select
-        value={value}
-        onChange={onChange}
-        className="h-11 w-full rounded-sm border border-border-strong bg-surface px-3 text-sm focus:border-accent focus:outline-none"
-      >
-        {models.map((model) => (
-          <option key={model.id} value={model.id}>
-            {model.name} — {model.hint}
-          </option>
-        ))}
-        {/* An OpenRouter id chosen on the organise screen may not be in this list. */}
-        {!known && value !== "" && <option value={value}>{value}</option>}
-      </select>
-    </label>
   );
 }
 

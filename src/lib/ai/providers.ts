@@ -41,11 +41,11 @@ export const PROVIDERS: Record<ProviderId, ProviderMeta> = {
     keyUrl: "https://openrouter.ai/keys",
     supportsOauth: true,
     defaultModel: "google/gemini-2.5-flash",
+    /* Fallback only; the live catalogue replaces this wherever it loads. */
     models: [
       { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash", hint: "fast and cheap" },
-      { id: "anthropic/claude-3.5-haiku", name: "Claude 3.5 Haiku", hint: "balanced" },
-      { id: "openai/gpt-4o-mini", name: "GPT-4o mini", hint: "cheap" },
-      { id: "deepseek/deepseek-chat", name: "DeepSeek Chat", hint: "cheapest" },
+      { id: "openai/gpt-5-nano", name: "GPT-5 nano", hint: "cheapest" },
+      { id: "deepseek/deepseek-v4-flash", name: "DeepSeek V4 Flash", hint: "cheap, long context" },
     ],
   },
   anthropic: {
@@ -58,11 +58,11 @@ export const PROVIDERS: Record<ProviderId, ProviderMeta> = {
     supportsOauth: false,
     oauthNote:
       "Anthropic does not allow third-party apps to sign in with a Claude Pro/Max account — a Console key is required.",
-    defaultModel: "claude-sonnet-4-5",
+    defaultModel: "claude-haiku-4-5",
     models: [
-      { id: "claude-sonnet-4-5", name: "Claude Sonnet 4.5", hint: "best all-round" },
-      { id: "claude-haiku-4-5", name: "Claude Haiku 4.5", hint: "fast and cheap" },
-      { id: "claude-opus-4-5", name: "Claude Opus 4.5", hint: "most capable" },
+      { id: "claude-haiku-4-5", name: "Claude Haiku 4.5", hint: "fastest, cheapest" },
+      { id: "claude-sonnet-5", name: "Claude Sonnet 5", hint: "best all-round" },
+      { id: "claude-opus-5", name: "Claude Opus 5", hint: "most capable" },
     ],
   },
   openai: {
@@ -75,11 +75,11 @@ export const PROVIDERS: Record<ProviderId, ProviderMeta> = {
     supportsOauth: false,
     oauthNote:
       "“Sign in with ChatGPT” currently only ships inside Codex tooling, so an API key is needed.",
-    defaultModel: "gpt-4o-mini",
+    defaultModel: "gpt-5-nano",
     models: [
-      { id: "gpt-4o-mini", name: "GPT-4o mini", hint: "fast and cheap" },
-      { id: "gpt-4o", name: "GPT-4o", hint: "stronger" },
-      { id: "o4-mini", name: "o4-mini", hint: "reasoning" },
+      { id: "gpt-5-nano", name: "GPT-5 nano", hint: "fastest, cheapest" },
+      { id: "gpt-5-mini", name: "GPT-5 mini", hint: "balanced" },
+      { id: "gpt-4.1-nano", name: "GPT-4.1 nano", hint: "long context" },
     ],
   },
 };

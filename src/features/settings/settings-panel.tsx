@@ -9,6 +9,7 @@ import {
   type Preferences,
   savePreferences,
 } from "@/features/onboarding/preferences";
+import type { ModelChoice } from "@/features/settings/model-picker";
 import { ProviderSection } from "@/features/settings/provider-section";
 import type { ProviderId } from "@/lib/ai/providers";
 import { SECTION_TRANSITION } from "@/lib/motion";
@@ -16,12 +17,14 @@ import { SECTION_TRANSITION } from "@/lib/motion";
 interface SettingsPanelProps {
   connected: ProviderId | undefined;
   model: string | undefined;
+  models: readonly ModelChoice[];
+  maskedKey: string | undefined;
 }
 
 const HIDDEN = { opacity: 0, y: 10 };
 const SHOWN = { opacity: 1, y: 0 };
 
-export function SettingsPanel({ connected, model }: SettingsPanelProps) {
+export function SettingsPanel({ connected, model, models, maskedKey }: SettingsPanelProps) {
   const [preferences, setPreferences] = useState<Preferences>(DEFAULT_PREFERENCES);
 
   useEffect(() => {
@@ -55,7 +58,7 @@ export function SettingsPanel({ connected, model }: SettingsPanelProps) {
       transition={SECTION_TRANSITION}
       className="flex flex-col gap-10"
     >
-      <ProviderSection connected={connected} model={model} />
+      <ProviderSection connected={connected} model={model} models={models} maskedKey={maskedKey} />
 
       <section>
         <h2 className="mb-1 text-sm font-semibold">How the AI works</h2>

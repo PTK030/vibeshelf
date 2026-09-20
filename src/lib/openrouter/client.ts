@@ -74,6 +74,8 @@ export interface ModelOption {
   /* Converted to dollars per million tokens, which is how people think. */
   promptPerMillion: number | undefined;
   completionPerMillion: number | undefined;
+  /* Free tier: either the :free suffix or zero on both sides of the price. */
+  isFree: boolean;
 }
 
 function perMillion(price: string | undefined): number | undefined {
@@ -96,11 +98,17 @@ export async function listStructuredOutputModels(key: string): Promise<ModelOpti
   if (!response.ok) throw new Error(`OpenRouter /models returned ${response.status}`);
 
   const parsed = ModelsSchema.parse(await response.json());
-  return parsed.data.map((model) => ({
-    id: model.id,
-    name: model.name,
-    contextLength: model.context_length,
-    promptPerMillion: perMillion(model.pricing?.prompt),
-    completionPerMillion: perMillion(model.pricing?.completion),
-  }));
+  return parsed.data.map((model) => {
+    const promptPerMillion = perMillion(model.pricing?.prompt);
+    const completionPerMillion = perMillion(model.pricing?.completion);
+
+    return {
+      id: model.id,
+      name: model.name,
+      contextLength: model.context_length,
+      promptPerMillion,
+      completionPerMillion,
+      isFree: model.id.endsWith(":free") || (promptPerMillion === 0 && completionPerMillion === 0),
+    };
+  });
 }
