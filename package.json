@@ -20,13 +20,13 @@
     "prepare": "lefthook install --force"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^4.0.58",
-    "@ai-sdk/openai": "^4.0.71",
+    "@ai-sdk/anthropic": "^4.0.63",
+    "@ai-sdk/openai": "^4.0.75",
     "@openrouter/ai-sdk-provider": "^3.1.0",
     "ai": "^7.0.107",
     "clsx": "^2.1.1",
     "jose": "^6.2.12",
-    "motion": "^13.4.0",
+    "motion": "^13.4.3",
     "next": "16.3.5",
     "react": "19.2.8",
     "react-dom": "19.2.8",
