@@ -20,16 +20,16 @@
     "prepare": "lefthook install --force"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^4.0.58",
-    "@ai-sdk/openai": "^4.0.71",
+    "@ai-sdk/anthropic": "^4.0.71",
+    "@ai-sdk/openai": "^4.0.83",
     "@openrouter/ai-sdk-provider": "^3.1.0",
-    "ai": "^7.0.107",
+    "ai": "^7.0.127",
     "clsx": "^2.1.1",
     "jose": "^6.2.12",
-    "motion": "^13.4.0",
-    "next": "16.3.5",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
+    "motion": "^13.5.0",
+    "next": "16.3.8",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "tailwind-merge": "^3.7.0",
     "zod": "^4.6.5"
   },
@@ -38,13 +38,13 @@
     "@types/node": "^22.20.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "knip": "^6.37.0",
-    "lefthook": "^2.1.14",
-    "oxfmt": "^0.68.0",
-    "oxlint": "^1.83.0",
+    "knip": "^6.39.0",
+    "lefthook": "^2.1.16",
+    "oxfmt": "^0.71.0",
+    "oxlint": "^1.86.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^5.0.1"
+    "vitest": "^5.0.3"
   },
   "engines": {
     "node": ">=22.12.0"
